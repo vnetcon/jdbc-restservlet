@@ -1,0 +1,88 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.vnetcon</groupId>
+  <artifactId>jdbc-restservlet</artifactId>
+  <packaging>war</packaging>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>jdbc-restservlet Maven Webapp</name>
+  <url>http://maven.apache.org</url>
+  <dependencies>
+  
+<!-- https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload -->
+<dependency>
+    <groupId>commons-fileupload</groupId>
+    <artifactId>commons-fileupload</artifactId>
+    <version>1.4</version>
+</dependency>
+  
+<!-- https://mvnrepository.com/artifact/javax.mail/mail -->
+<dependency>
+    <groupId>javax.mail</groupId>
+    <artifactId>mail</artifactId>
+    <version>1.4</version>
+</dependency>
+  
+	<dependency>
+	    <groupId>com.vnetcon</groupId>
+	    <artifactId>jdbc-rest</artifactId>
+	    <version>1.0</version>
+	</dependency>
+<!-- https://mvnrepository.com/artifact/org.apache.derby/derbyclient -->
+<dependency>
+    <groupId>org.apache.derby</groupId>
+    <artifactId>derbyclient</artifactId>
+    <version>10.14.2.0</version>
+</dependency>  
+<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <version>42.2.9</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/org.apache.phoenix/phoenix-queryserver-client -->
+<dependency>
+    <groupId>org.apache.phoenix</groupId>
+    <artifactId>phoenix-queryserver-client</artifactId>
+    <version>5.0.0-HBase-2.0</version>
+</dependency>
+	
+	
+	<dependency>
+	    <groupId>javax.servlet</groupId>
+	    <artifactId>javax.servlet-api</artifactId>
+	    <version>3.1.0</version>
+	    <scope>provided</scope>
+	</dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  
+  
+  <build>
+    <finalName>jdbc-rest</finalName>
+    
+  <plugins>
+      <plugin>
+        <groupId>org.mortbay.jetty</groupId>
+        <artifactId>maven-jetty-plugin</artifactId>
+        <version>6.1.10</version>
+        <configuration>
+          <scanIntervalSeconds>10</scanIntervalSeconds>
+          <connectors>
+            <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+              <port>8080</port>
+              <maxIdleTime>60000</maxIdleTime>
+            </connector>
+          </connectors>
+        </configuration>
+      </plugin>  
+  </plugins>
+    
+  </build>
+  
+</project>
