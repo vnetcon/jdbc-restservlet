@@ -16,6 +16,10 @@ mvn jetty:run
 
 The last command is for starting the jetty webserver for running the REST API.
 
+## Commercial use
+If you want ot use this in closed code project or product you can buy a 99 USD license [here](https://vnetcon.com)  
+If you think tha price is too low or high you can also change the price there :)
+
 ## Quick start
 Below are the steps to get up and running quickly. For some reason we like angluar and due to this web development based instructions are based on this.
 
