@@ -7,6 +7,13 @@ Key features:
 * upload endpoint for storing files into database (under development)
 * download endpoint for retrieving files from database (under development)
 
+## Building
+mvn clean install
+mvn package
+mvn jetty:run 
+
+The last command is for starting the jetty webserver for running the REST API.
+
 ## Quick start
 Below are the steps to get up and running quickly. For some reason we like angluar and due to this web development based instructions are based on this.
 
