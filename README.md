@@ -7,6 +7,8 @@ Key features:
 * upload endpoint for storing files into database (under development)
 * download endpoint for retrieving files from database (under development)
 
+At the moment it seems that this works only on java 8 and jetty9
+
 ## Building
 mvn clean install  
 mvn package  
