@@ -8,8 +8,8 @@ Key features:
 * download endpoint for retrieving files from database (under development)
 
 ## Building
-mvn clean install
-mvn package
+mvn clean install  
+mvn package  
 mvn jetty:run 
 
 The last command is for starting the jetty webserver for running the REST API.
