@@ -7,7 +7,6 @@ Key features:
 * upload endpoint for storing files into database (under development)
 * download endpoint for retrieving files from database (under development)
 
-At the moment it seems that this works only on java 8 and jetty9
 
 ## Building
 mvn clean install  
@@ -17,8 +16,8 @@ mvn jetty:run
 The last command is for starting the jetty webserver for running the REST API.
 
 ## Commercial use
-If you want ot use this in closed code project or product you can buy a 99 USD license [here](https://vnetcon.com)  
-If you think tha price is too low or high you can also change the price there :)
+If you want to use this in closed code project or product you can buy a 99 USD license [here](https://vnetcon.com)  
+If you think the price is too low or high you can also change the price there :)
 
 ## Quick start
 Below are the steps to get up and running quickly. For some reason we like angluar and due to this web development based instructions are based on this.
