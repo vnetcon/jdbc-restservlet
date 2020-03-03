@@ -1,10 +1,15 @@
 package com.vnetcon.jdbc.restservlet;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.Reader;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -24,15 +29,12 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
+/*
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-
+*/
 import com.vnetcon.jdbc.rest.RestConnection;
 
 public class RestServlet extends HttpServlet {
@@ -61,7 +63,7 @@ public class RestServlet extends HttpServlet {
     private static final int MEMORY_THRESHOLD   = 1024 * 1024 * 3;  // 3MB
     private static final int MAX_FILE_SIZE      = 1024 * 1024 * 40; // 40MB
     private static final int MAX_REQUEST_SIZE   = 1024 * 1024 * 50; // 50MB	
-	
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		doPost(req, resp);
@@ -108,6 +110,7 @@ public class RestServlet extends HttpServlet {
 	}
 	
 	private void uploadFile(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		/*
         if (!ServletFileUpload.isMultipartContent(request)) {
             // if not, we stop here
             PrintWriter writer = response.getWriter();
@@ -170,6 +173,7 @@ public class RestServlet extends HttpServlet {
         // redirects client to message page
         getServletContext().getRequestDispatcher("/message.jsp").forward(
                 request, response);	
+                */
     }
 
 	private void downloadFile(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -217,6 +221,7 @@ public class RestServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		OutputStream out = resp.getOutputStream();
 		PrintWriter w = new PrintWriter(out);
+
 		Connection con = null;
 		try {
 			Properties p = this.loadProperties();
