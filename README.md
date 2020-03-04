@@ -78,7 +78,10 @@ Below are some notes related to this. More detailed examples can be fuond from d
 * hidden_ indicates that the column should not be displayed in result json (e.g. select a as hidden_a from table)
 * subquery_ indicates that the column is a select that should be executed (e.g. select 'select a, b form table' as subquery_colname). It is possible to have subqueries in subqueries.
 * t_ indicates that the param value should be replaced in subquery with "parent sql column value" (e.g.  '{t_userid}' would be replaced with userid columnvalue from main query
-  
+
+## Data types
+All data is treated as stings. If you need to insert/update data in different data type you need to put the parameter into database function that will do the conversion.  
+insert into table a (a, b) values ('{r_a}', to_number('{r_b}') --[json]
 
 ## Security
 In general the main idea for taking care of the security is to put this rest api server behind apacahe or other http server that takes care of authentication (ldap, openidc, shibboleth etc.). There are also some build in features in server  
