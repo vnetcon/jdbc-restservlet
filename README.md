@@ -52,7 +52,9 @@ Below are some notes related to this. More detailed examples can be fuond from d
 * r_ at the begining of parameter indicates that the actual value is retrived from htttp request (e.g. client send client id the parameter is sql should be '{r_clientid}'
 * --[json:Person; r_clientid=default_value]: Set the default value for parameter 
 * hidden_ indicates that the column should not be displayed in result json (e.g. select a as hidden_a from table)
-* subquery_ indicates that the column is a select that should be executed (e.g. select 'select a, b form table' as subquery_colname)
+* subquery_ indicates that the column is a select that should be executed (e.g. select 'select a, b form table' as subquery_colname). It is possible to have subqueries in subqueries.
+* t_ indicates that the param value should be replaced in subquery with "parent sql column value" (e.g.  '{t_userid}' would be replaced with userid columnvalue from main query
+  
 
 ## Security
 
