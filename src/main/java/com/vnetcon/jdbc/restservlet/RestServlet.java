@@ -292,7 +292,7 @@ public class RestServlet extends HttpServlet {
 			}
 
 			
-			System.out.println("config: " + config + " user: " + p.getProperty(config + ".jdbc.user"));
+			//System.out.println("config: " + config + " user: " + p.getProperty(config + ".jdbc.user"));
 			con = DriverManager.getConnection("jdbc:vnetcon:rest://" + config, p.getProperty(config + ".jdbc.user"), p.getProperty(config + ".jdbc.pass"));
 						
 			if(accesstoken == null) {
