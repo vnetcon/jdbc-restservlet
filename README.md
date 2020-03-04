@@ -27,7 +27,7 @@ to see the demo json
 
 
 ## Building
-If you want to build the war file your self and deploy it to some other servlet engine, take the following steps
+If you want to build the war file your self and deploy it to some other servlet engine, take the following steps. Before these steps you need to build the [jdbc-rest](https://github.com/vnetcon/jdbc-rest) jdbc driver to get it to your local maven repository.
 1. Clone the repo and move to the folder where pom.xml exists
 2. execute: mvn clean isntall
 3. execute: mvn package  
