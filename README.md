@@ -45,7 +45,24 @@ If you think the price is too low or high you can also change the price there :)
 
 ## sql syntex and parameters
 In short the idea is to contert normal sql to json by with --[json] comment. This comment will tell the driver 
-to convert execute the statement as jdbc-rest statement.  
+to convert execute the statement as jdbc-rest statement. Below is a simple example
+
+```
+select fname as "FirstName", lname as "LastName" 
+from miki.mikitest 
+where fname = '{r_fname}' --[json=Person; r_fname=Adam]
+```
+which poduce following json
+
+```json
+{
+  "Person": {
+    "FirstName": "Adam",
+    "LastName": "Smith"
+  }
+}
+```
+
 Below are some notes related to this. More detailed examples can be fuond from dev-nev.zip and DBeaver in there.
 * --[json]: convert the result set to json and in insert/update/delete replace the rest-json parameters '{param_name}' with correct valus
 * --[json=Person]: Give the name for root elemente in select statements
