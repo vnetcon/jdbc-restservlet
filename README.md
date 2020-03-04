@@ -1,7 +1,14 @@
 # jdbc-restservlet
 This servlet is build on [jdbc-rest](https://github.com/vnetcon/jdbc-rest) driver and it serves as REST API server.
 The idea is to offer an out-of-the box REST API solution for web developers (Angular, React, Vue etc.). 
-In short web developer need to write only client side code and sql - no need for middle tier applications for accessing database. 
+In short web developer need to write only client side code and sql - no need for middle tier applications for accessing database. In our mind the development environment would be something like
+
+* Angular/React/Vue etc project
+* Proxy configuration from dev server for /rest to jdbc-rest api server
+* Web development as usua
+* rest development with SQL for example in DBeaver
+
+And thats it.
 
 Key features:
 * REST API based on [jdbc-rest](https://github.com/vnetcon/jdbc-rest) driver (select/insert/update/delete)
