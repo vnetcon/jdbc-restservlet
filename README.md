@@ -64,7 +64,9 @@ In general the main idea for taking care of the security is to put this rest api
 All http headers are also passed to processing as request parameters so you can use those also in your sql statements as regular request paraeters (e.g. username from http headers send by apache)
   
 ## Scaling
-
+The rest server doesn't use any sessions so it should be possible to create an cluster of these servers. At the moment there is no support for connection pooling so all the requests open new connection and close it after execution. In really busy sites this can be an issue from database point of view.  
+  
+If you are running a really busy site even the connection pooling can cause issues to database. In this case you might want to take a closer look to HBase + Phoenix JDBC. This setup doesn't hava connection limitatiosn - if I have understand this right. 
 
 
 
