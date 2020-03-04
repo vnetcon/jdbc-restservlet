@@ -5,7 +5,7 @@ In short web developer need to write only client side code and sql - no need for
 
 * Angular/React/Vue etc project
 * Proxy configuration from dev server for /rest to jdbc-rest api server
-* Web development as usua
+* Web development as usual
 * rest development with SQL for example in DBeaver
 
 And thats it.
