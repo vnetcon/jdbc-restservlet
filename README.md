@@ -31,8 +31,6 @@ You just download the zip file and start the downloaded software with following 
 After this you can point your browser to http://localhost:8080/jdbc-rest/rest/default/getUser/v1?userid=3 
 to see the demo json
 
-
-
 ## Building
 If you want to build the war file your self and deploy it to some other servlet engine, take the following steps. Before these steps you need to build the [jdbc-rest](https://github.com/vnetcon/jdbc-rest) jdbc driver to get it to your local maven repository.
 1. Clone the repo and move to the folder where pom.xml exists
@@ -45,6 +43,9 @@ If you develop the servlet you can run
 mvn jetty:run
 
 To start the development servlet engine.
+
+## Suported databases
+In theory all databases that have JDBC driver. Postgresql, Oracle, SQL Server etc.
 
 ## Commercial use
 If you want to use this in closed code project or product you can buy a 99 USD license [here](https://vnetcon.com)  
