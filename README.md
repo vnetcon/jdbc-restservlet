@@ -1,6 +1,6 @@
 # jdbc-restservlet
 This servlet is build on [jdbc-rest](https://github.com/vnetcon/jdbc-rest) driver and it serves as REST API server.
-The idea is to offer an out-of-the box REST AP solution for web developers (Angular, React, Vue etc.). 
+The idea is to offer an out-of-the box REST API solution for web developers (Angular, React, Vue etc.). 
 In short web developer need to write only client side code and sql - no need for middle tier applications for accessing database. 
 
 Key features:
