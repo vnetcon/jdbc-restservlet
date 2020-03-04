@@ -4,7 +4,7 @@ The idea is to offer an out-of-the box REST API solution for web developers (Ang
 In short web developer need to write only client side code and sql - no need for middle tier applications for accessing database. 
 
 Key features:
-* REST API based on link [jdbc-rest](https://github.com/vnetcon/jdbc-rest) driver (select/insert/update/delete)
+* REST API based on [jdbc-rest](https://github.com/vnetcon/jdbc-rest) driver (select/insert/update/delete)
 * email endpoint for sending emails
 * upload endpoint for storing files into database (under development)
 * download endpoint for retrieving files from database (under development)
