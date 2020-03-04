@@ -43,6 +43,21 @@ To start the development servlet engine.
 If you want to use this in closed code project or product you can buy a 99 USD license [here](https://vnetcon.com)  
 If you think the price is too low or high you can also change the price there :)
 
+## sql syntex and parameters
+In short the idea is to contert normal sql to json by with --[json] comment. This comment will tell the driver 
+to convert execute the statement as jdbc-rest statement.  
+Below are some notes related to this. More detailed examples can be fuond from dev-nev.zip and DBeaver in there.
+* --[json]: convert the result set to json and in insert/update/delete replace the rest-json parameters '{param_name}' with correct valus
+* --[json=Person]: Give the name for root elemente in select statements
+* r_ at the begining of parameter indicates that the actual value is retrived from htttp request (e.g. client send client id the parameter is sql should be '{r_clientid}'
+* --[json:Person; r_clientid=default_value]: Set the default value for parameter 
+* hidden_ indicates that the column should not be displayed in result json (e.g. select a as hidden_a from table)
+* subquery_ indicates that the column is a select that should be executed (e.g. select 'select a, b form table' as subquery_colname)
+
+## Security
+
+
+## Scaling
 
 
 
