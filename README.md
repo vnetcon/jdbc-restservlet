@@ -57,8 +57,12 @@ Below are some notes related to this. More detailed examples can be fuond from d
   
 
 ## Security
+In general the main idea for taking care of the security is to put this rest api server behind apacahe or other http server that takes care of authentication (ldap, openidc, shibboleth etc.). There are also some build in features in server  
+* all values are "escaped" to prevent sql injections
+* vnetcon-token can be set in http headers and configured to REST_SERVLET_CONFIG table (syntax "token-1";"token-2"). Only valid tokens are then served by server
 
-
+All http headers are also passed to processing as request parameters so you can use those also in your sql statements as regular request paraeters (e.g. username from http headers send by apache)
+  
 ## Scaling
 
 
