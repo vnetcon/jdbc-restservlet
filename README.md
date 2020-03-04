@@ -10,12 +10,15 @@ Key features:
 * download endpoint for retrieving files from database (under development)
 
 ## Quick Start (for windows 64bit)
+For setting up the development environment you don't need install anything. 
+You just download the zip file and start the downloaded software with following steps:  
+
 * create folder c:\vnetcon
 * Download Development environment [here]() to c:\vnetcon
 * unzip the file. After this you should have c:\vnetcon\dev-env folder
 * Create folder c:\etc\vnetcon and copy the database.properties file there
 * Start databaes by double clicking 1_StartPostgreSQL.bat
-* Start DBeaver database tool by double clicking 2_StartDBeaver.bat
+* Start [DBeaver](https://dbeaver.io/) database tool by double clicking 2_StartDBeaver.bat
 * Start Tomcat by double clicking 3_StartTomcat8.bat
 
 After this you can point your browser to http://localhost:8080/jdbc-rest/rest/default/getUser/v1?userid=3 
