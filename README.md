@@ -68,6 +68,6 @@ The rest server doesn't use any sessions so it should be possible to create an c
   
 If you are running a really busy site even the connection pooling can cause issues to database. In this case you might want to take a closer look to HBase + Phoenix JDBC. This setup doesn't hava connection limitatiosn - if I have understand this right. 
 
-
-
+## OSGI
+The server have been successfylly deployed to Apache Karaf but this is littel bit tricy operation to do due to dependencies. The main Karaf environment we are interesed in is Talend ESB's Runtime_ESB (build on Apache Karaf). On this you can build with Talend ESB Open Studio quite easily different kind of services with minimal coding.
 
