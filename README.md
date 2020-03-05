@@ -16,7 +16,7 @@ Key features:
 * upload endpoint for storing files into database (under development)
 * download endpoint for retrieving files from database (under development)
 
-## Quick Start (for windows 64bit)
+## Quick Start (for windows 64bit) - currently broken, will be fixed soon
 For setting up the development environment you don't need install anything. 
 You just download the zip file and start the downloaded software with following steps:  
 
