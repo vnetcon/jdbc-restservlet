@@ -50,7 +50,7 @@ In theory all databases that have JDBC driver. Postgresql, Oracle, SQL Server et
 
 ## REST_SERVLET_CONFIG -table
 This is the key table in REST API server. Into this table all sql statements should be stored 
-and in here you configure the url endpoint.  
+and in here you configure the url endpoint. This table must locate in VNETCON shema and both the scehma and table name must be upper case.  
 
 * REST_ENDPOINT_ID: unique id for row
 * REST_ENDPOINT: endpoint to be used in url for executing the sql with query params
