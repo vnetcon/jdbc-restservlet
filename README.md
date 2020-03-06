@@ -48,6 +48,20 @@ To start the development servlet engine.
 ## Suported databases
 In theory all databases that have JDBC driver. Postgresql, Oracle, SQL Server etc.
 
+## REST_SERVLET_CONFIG -table
+This is the key table in REST API server. Into this table all sql statements should be stored 
+and in here you configure the url endpoint.  
+
+* REST_ENDPOINT_ID: unique id for row
+* REST_ENDPOINT: endpoint to be used in url for executing the sql with query params
+* VERSION: endpoint version. This must be a part of the url
+* ALLOWED_TOKENS: list of "toke-1" string that are allowed to use the service. Client pass this in vnetcon-token http header.
+* ALLOWED_IPADDRESSES: Allowed ip addresses (not implemented yet)
+* JSON_SQL: The sql statement containing the --[json] configuration
+* ENABLED: 1 endabled all other values disabled
+
+
+
 ## Commercial use
 If you want to use this in closed code project or product you can buy a 99 USD license [here](https://vnetcon.com)  
 If you think the price is too low or high you can also change the price there :)
