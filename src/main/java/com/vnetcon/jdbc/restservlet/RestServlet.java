@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -30,6 +31,7 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import com.google.gson.Gson;
 /*
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -57,6 +59,8 @@ public class RestServlet extends HttpServlet {
 			" AND \"ENABLED\" = 1";
 
 	
+	private static final String logSql = "INSERT INTO " + configSchema + "\".\"REST_SERVLET_LOG\" \r\n" +
+	" (\"LOGTIME\", \"SQL\", \"REQUEST_PARAMS\", \"RESPONSE_JSON\") VALUES (current_timestamp,?,?,?)";
     private static final String UPLOAD_DIRECTORY = "upload";
     
     // upload settings
@@ -64,6 +68,9 @@ public class RestServlet extends HttpServlet {
     private static final int MAX_FILE_SIZE      = 1024 * 1024 * 40; // 40MB
     private static final int MAX_REQUEST_SIZE   = 1024 * 1024 * 50; // 50MB	
 
+    
+    private Gson gson = new Gson();
+    
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		doPost(req, resp);
@@ -178,6 +185,15 @@ public class RestServlet extends HttpServlet {
 
 	private void downloadFile(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 		
+	}
+	
+	private void logRequest(Connection con, String sql, Map<String, String> params, String returnJson) throws Exception {
+		String jsonParams = gson.toJson(params);
+		PreparedStatement pstmt = con.prepareStatement(logSql);
+		pstmt.setString(1, sql);
+		pstmt.setString(2, jsonParams);
+		pstmt.setString(3, returnJson);
+		pstmt.executeUpdate();
 	}
 	
 	private void sendEmail(Map<String, String> params) throws Exception {
@@ -303,6 +319,7 @@ public class RestServlet extends HttpServlet {
 			String sql = getJsonSql(con, endpoint, version, accesstoken);
 
 			if(sql != null) {
+				StringWriter sw = new StringWriter();
 				Statement stmt = con.createStatement();
 				ResultSet rs = stmt.executeQuery(sql);
 				char[] buf = new char[1024];
@@ -311,6 +328,7 @@ public class RestServlet extends HttpServlet {
 				
 				if(writeInArray && rs != null) {
 					w.write("{ \"results\": [");
+					sw.write("{ \"results\": [");
 					w.flush();
 				}
 				
@@ -318,6 +336,7 @@ public class RestServlet extends HttpServlet {
 					Reader c = rs.getClob(1).getCharacterStream();
 					if(writeInArray) {
 						w.write(delim);
+						sw.write(delim);
 						w.flush();
 					}
 					while((read = c.read(buf)) > -1) {
@@ -326,23 +345,30 @@ public class RestServlet extends HttpServlet {
 							s = s.replace("\r", "");
 							s = s.replace("\n", "");
 							w.write(s);
+							sw.write(s);
 							w.flush();
 						} else {
 							w.write(buf, 0, read);
+							sw.write(buf, 0, read);
 							w.flush();
 						}
 					}
 					delim = ",";
 					w.write("\n");
+					sw.write("\n");
 					w.flush();
 					out.flush();
 				}
 				if(writeInArray && rs != null) {
 					w.write("]}");
+					sw.write("]}");
 					w.flush();
 				}
 				
 				stmt.close();
+				sw.flush();
+				this.logRequest(con, sql, params, sw.toString());
+				sw.close();
 				con.close();
 				out.flush();
 				out.close();
