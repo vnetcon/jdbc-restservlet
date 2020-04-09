@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -44,8 +45,8 @@ public class RestServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static final String inArrayParam = "inarray";
 	private static final String inOnerowParam = "inonerow";
-	private static final String dbConf = "/etc/vnetcon/database.properties";
-	private static final String emailConf = "/etc/vnetcon/email.properties";
+	private static final String dbConf = "/opt/vnetcon/conf/database.properties";
+	private static final String emailConf = "/opt/vnetcon/con/email.properties";
 	private static final String tokenHeader = "vnetcon-token";
 	private static final String configSchema = "VNETCON";
 	private static final String configSelect = "SELECT\r\n" + 
@@ -58,9 +59,10 @@ public class RestServlet extends HttpServlet {
 			" AND (\"ALLOWED_TOKENS\" = 'ALL' OR \"ALLOWED_TOKENS\" LIKE ?)\r\n" + 
 			" AND \"ENABLED\" = 1";
 
-	
-	private static final String logSql = "INSERT INTO " + configSchema + "\".\"REST_SERVLET_LOG\" \r\n" +
-	" (\"LOGTIME\", \"SQL\", \"REQUEST_PARAMS\", \"RESPONSE_JSON\") VALUES (current_timestamp,?,?,?)";
+
+	private static final String timestampfunc = "timestampfunc";
+	private static final String logSql = "INSERT INTO \"" + configSchema + "\".\"REST_SERVLET_LOG\" \r\n" +
+	" (\"LOGTIME\", \"SQL\", \"REQUEST_PARAMS\", \"RESPONSE_JSON\") VALUES ('{" + timestampfunc + "}',?,?,?)";
     private static final String UPLOAD_DIRECTORY = "upload";
     
     // upload settings
@@ -187,13 +189,27 @@ public class RestServlet extends HttpServlet {
 		
 	}
 	
-	private void logRequest(Connection con, String sql, Map<String, String> params, String returnJson) throws Exception {
+	private void logRequest(String config, Properties props, Connection con, String sql, Map<String, String> params, String returnJson) throws Exception {
 		String jsonParams = gson.toJson(params);
-		PreparedStatement pstmt = con.prepareStatement(logSql);
-		pstmt.setString(1, sql);
-		pstmt.setString(2, jsonParams);
-		pstmt.setString(3, returnJson);
-		pstmt.executeUpdate();
+		String ulogSql = logSql.replaceAll("'\\{" + timestampfunc + "\\}'", props.getProperty(config + ".jdbc." + timestampfunc));
+		PreparedStatement pstmt = con.prepareStatement(ulogSql);
+		if(props.getProperty(config + ".jdbc.driver").toLowerCase().indexOf("postgresql") > -1) {
+			pstmt.setString(1, sql);
+			pstmt.setString(2, jsonParams);
+			pstmt.setString(3, returnJson);
+			pstmt.executeUpdate();
+		} else {
+			Clob c = con.createClob();
+			c.setString(1, sql);
+			pstmt.setClob(1, c);
+			c = con.createClob();
+			c.setString(1, jsonParams);
+			pstmt.setClob(2, c);
+			c = con.createClob();
+			c.setString(1, returnJson);
+			pstmt.setClob(3, c);
+			pstmt.executeUpdate();
+		}
 	}
 	
 	private void sendEmail(Map<String, String> params) throws Exception {
@@ -228,7 +244,8 @@ public class RestServlet extends HttpServlet {
 			message.setReplyTo(new javax.mail.Address[]
 					{
 					    new javax.mail.internet.InternetAddress(props.getProperty("email.replyto"))
-					});		}
+					});		
+		}
 		
 		Transport.send(message);
 	}
@@ -239,6 +256,9 @@ public class RestServlet extends HttpServlet {
 		PrintWriter w = new PrintWriter(out);
 
 		Connection con = null;
+		Connection logCon = null;
+		Connection restCon = null;
+		
 		try {
 			Properties p = this.loadProperties();
 			resp.setContentType("application/json; charset=UTF-8");
@@ -310,13 +330,25 @@ public class RestServlet extends HttpServlet {
 			
 			//System.out.println("config: " + config + " user: " + p.getProperty(config + ".jdbc.user"));
 			con = DriverManager.getConnection("jdbc:vnetcon:rest://" + config, p.getProperty(config + ".jdbc.user"), p.getProperty(config + ".jdbc.pass"));
-						
+			
+			if(p.getProperty(config + ".jdbc.logcon") != null) {
+				String logconConfig = p.getProperty(config + ".jdbc.logcon");
+				logCon = DriverManager.getConnection("jdbc:vnetcon:rest://" + logconConfig, p.getProperty(config + ".jdbc.user"), p.getProperty(config + ".jdbc.pass"));
+			}
+			
 			if(accesstoken == null) {
 				accesstoken = "ALL";
 			}
 			
 			((RestConnection)con).setQueryParams(params);
-			String sql = getJsonSql(con, endpoint, version, accesstoken);
+			String sql = null;
+			if(p.getProperty(config + ".jdbc.restcon") != null) {
+				restCon = DriverManager.getConnection("jdbc:vnetcon:rest://" + p.getProperty(config + ".jdbc.restcon"), p.getProperty(config + ".jdbc.user"), p.getProperty(config + ".jdbc.pass"));
+				sql = getJsonSql(restCon, endpoint, version, accesstoken);
+				restCon.close();
+			} else {
+				sql = getJsonSql(con, endpoint, version, accesstoken);
+			}
 
 			if(sql != null) {
 				StringWriter sw = new StringWriter();
@@ -367,7 +399,10 @@ public class RestServlet extends HttpServlet {
 				
 				stmt.close();
 				sw.flush();
-				this.logRequest(con, sql, params, sw.toString());
+				if(logCon != null) {
+					this.logRequest(config, p, logCon, sql, params, sw.toString());
+					logCon.close();
+				}
 				sw.close();
 				con.close();
 				out.flush();
