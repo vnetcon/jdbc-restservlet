@@ -85,6 +85,22 @@
   <build>
     <finalName>jdbc-rest</finalName>
   <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-war-plugin</artifactId>
+            <configuration>
+                <webResources>
+                    <resource>
+                        <directory>libs/</directory>
+                        <targetPath>WEB-INF/lib</targetPath>
+                        <includes>
+                            <include>**/*.jar</include>
+                        </includes>
+                    </resource>
+                </webResources>
+            </configuration>
+        </plugin>  
+  
   <!-- 
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>

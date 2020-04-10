@@ -400,7 +400,7 @@ public class RestServlet extends HttpServlet {
 				stmt.close();
 				sw.flush();
 				if(logCon != null) {
-					this.logRequest(config, p, logCon, sql, params, sw.toString());
+					this.logRequest(p.getProperty(config + ".jdbc.logcon"), p, logCon, sql, params, sw.toString());
 					logCon.close();
 				}
 				sw.close();
