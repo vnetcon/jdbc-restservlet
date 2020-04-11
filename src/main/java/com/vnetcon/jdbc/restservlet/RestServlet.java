@@ -62,7 +62,7 @@ public class RestServlet extends HttpServlet {
 
 	private static final String timestampfunc = "timestampfunc";
 	private static final String logSql = "INSERT INTO \"" + configSchema + "\".\"REST_SERVLET_LOG\" \r\n" +
-	" (\"LOGTIME\", \"SQL\", \"REQUEST_PARAMS\", \"RESPONSE_JSON\", \"REAL_VALUES\") VALUES ('{" + timestampfunc + "}',?,?,?,?)";
+	" (\"LOGTIME\", \"SQL\", \"REQUEST_PARAMS\", \"RESPONSE_JSON\", \"REAL_VALUES\", \"MESSAGE\") VALUES ('{" + timestampfunc + "}',?,?,?,?,?)";
     private static final String UPLOAD_DIRECTORY = "upload";
     
     // upload settings
@@ -189,7 +189,7 @@ public class RestServlet extends HttpServlet {
 		
 	}
 	
-	private void logRequest(String config, Properties props, Connection con, String sql, Map<String, String> params, String returnJson, String realVals) throws Exception {
+	private void logRequest(String config, Properties props, Connection con, String sql, Map<String, String> params, String returnJson, String realVals, String message) throws Exception {
 		String jsonParams = gson.toJson(params);
 		String ulogSql = logSql.replaceAll("'\\{" + timestampfunc + "\\}'", props.getProperty(config + ".jdbc." + timestampfunc));
 		PreparedStatement pstmt = con.prepareStatement(ulogSql);
@@ -198,6 +198,7 @@ public class RestServlet extends HttpServlet {
 			pstmt.setString(2, jsonParams);
 			pstmt.setString(3, returnJson);
 			pstmt.setString(4, realVals);
+			pstmt.setString(5, message);
 			pstmt.executeUpdate();
 		} else {
 			Clob c = con.createClob();
@@ -212,6 +213,9 @@ public class RestServlet extends HttpServlet {
 			c = con.createClob();
 			c.setString(1, realVals);
 			pstmt.setClob(4, c);
+			c = con.createClob();
+			c.setString(1, message);
+			pstmt.setClob(5, c);
 			pstmt.executeUpdate();
 		}
 	}
@@ -263,13 +267,17 @@ public class RestServlet extends HttpServlet {
 		Connection logCon = null;
 		Connection restCon = null;
 		
+		Properties p = null;
+		String config = null;
+		String sql = null;
+		Map<String, String> params = new HashMap<String, String>();
+		StringWriter swRealVals = new StringWriter();
+		
 		try {
-			Properties p = this.loadProperties();
+			p = this.loadProperties();
 			resp.setContentType("application/json; charset=UTF-8");
 			Class.forName("com.vnetcon.jdbc.rest.RestDriver");
-			Map<String, String> params = new HashMap<String, String>();
 			String uri = req.getRequestURI();
-			String config = null;
 			String endpoint = null;
 			String version = null;
 			String accesstoken = null;
@@ -345,7 +353,6 @@ public class RestServlet extends HttpServlet {
 			}
 			
 			((RestConnection)con).setQueryParams(params);
-			String sql = null;
 			if(p.getProperty(config + ".jdbc.restcon") != null) {
 				restCon = DriverManager.getConnection("jdbc:vnetcon:rest://" + p.getProperty(config + ".jdbc.restcon"), p.getProperty(config + ".jdbc.user"), p.getProperty(config + ".jdbc.pass"));
 				sql = getJsonSql(restCon, endpoint, version, accesstoken);
@@ -356,7 +363,6 @@ public class RestServlet extends HttpServlet {
 
 			if(sql != null) {
 				StringWriter sw = new StringWriter();
-				StringWriter swRealVals = new StringWriter();
 				Statement stmt = con.createStatement();
 				ResultSet rs = stmt.executeQuery(sql);
 				char[] buf = new char[1024];
@@ -409,7 +415,7 @@ public class RestServlet extends HttpServlet {
 				stmt.close();
 				sw.flush();
 				if(logCon != null) {
-					this.logRequest(p.getProperty(config + ".jdbc.logcon"), p, logCon, sql, params, sw.toString(), swRealVals.toString());
+					this.logRequest(p.getProperty(config + ".jdbc.logcon"), p, logCon, sql, params, sw.toString(), swRealVals.toString(), "ok");
 					logCon.close();
 				}
 				sw.close();
@@ -433,7 +439,19 @@ public class RestServlet extends HttpServlet {
 			} catch (Exception e1) {
 //				e1.printStackTrace();
 			}
-			w.write("{\"status\":\"Error: See the log files for details.\"}");
+			String errJson = "{\"status\":\"Error: See the log files for details.\"}";
+			w.write(errJson);
+			if(logCon != null) {
+				try {
+					StringWriter swErr = new StringWriter();
+					PrintWriter pwErr = new PrintWriter(swErr);
+					e.printStackTrace(pwErr);
+					this.logRequest(p.getProperty(config + ".jdbc.logcon"), p, logCon, sql, params, errJson, swRealVals.toString(), swErr.toString());
+					logCon.close();
+				}catch(Exception ex) {
+					e.printStackTrace();
+				}
+			}
 			w.flush();
 			out.flush();
 			out.close();
