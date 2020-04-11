@@ -62,7 +62,7 @@ public class RestServlet extends HttpServlet {
 
 	private static final String timestampfunc = "timestampfunc";
 	private static final String logSql = "INSERT INTO \"" + configSchema + "\".\"REST_SERVLET_LOG\" \r\n" +
-	" (\"LOGTIME\", \"SQL\", \"REQUEST_PARAMS\", \"RESPONSE_JSON\") VALUES ('{" + timestampfunc + "}',?,?,?)";
+	" (\"LOGTIME\", \"SQL\", \"REQUEST_PARAMS\", \"RESPONSE_JSON\", \"REAL_VALUES\") VALUES ('{" + timestampfunc + "}',?,?,?,?)";
     private static final String UPLOAD_DIRECTORY = "upload";
     
     // upload settings
@@ -189,7 +189,7 @@ public class RestServlet extends HttpServlet {
 		
 	}
 	
-	private void logRequest(String config, Properties props, Connection con, String sql, Map<String, String> params, String returnJson) throws Exception {
+	private void logRequest(String config, Properties props, Connection con, String sql, Map<String, String> params, String returnJson, String realVals) throws Exception {
 		String jsonParams = gson.toJson(params);
 		String ulogSql = logSql.replaceAll("'\\{" + timestampfunc + "\\}'", props.getProperty(config + ".jdbc." + timestampfunc));
 		PreparedStatement pstmt = con.prepareStatement(ulogSql);
@@ -197,6 +197,7 @@ public class RestServlet extends HttpServlet {
 			pstmt.setString(1, sql);
 			pstmt.setString(2, jsonParams);
 			pstmt.setString(3, returnJson);
+			pstmt.setString(4, realVals);
 			pstmt.executeUpdate();
 		} else {
 			Clob c = con.createClob();
@@ -208,6 +209,9 @@ public class RestServlet extends HttpServlet {
 			c = con.createClob();
 			c.setString(1, returnJson);
 			pstmt.setClob(3, c);
+			c = con.createClob();
+			c.setString(1, realVals);
+			pstmt.setClob(4, c);
 			pstmt.executeUpdate();
 		}
 	}
@@ -352,6 +356,7 @@ public class RestServlet extends HttpServlet {
 
 			if(sql != null) {
 				StringWriter sw = new StringWriter();
+				StringWriter swRealVals = new StringWriter();
 				Statement stmt = con.createStatement();
 				ResultSet rs = stmt.executeQuery(sql);
 				char[] buf = new char[1024];
@@ -386,10 +391,14 @@ public class RestServlet extends HttpServlet {
 						}
 					}
 					delim = ",";
-					w.write("\n");
-					sw.write("\n");
 					w.flush();
 					out.flush();
+					
+					c = rs.getClob(2).getCharacterStream();
+					while ((read = c.read(buf)) > -1) {
+						swRealVals.write(buf, 0, read);
+					}
+					
 				}
 				if(writeInArray && rs != null) {
 					w.write("]}");
@@ -400,7 +409,7 @@ public class RestServlet extends HttpServlet {
 				stmt.close();
 				sw.flush();
 				if(logCon != null) {
-					this.logRequest(p.getProperty(config + ".jdbc.logcon"), p, logCon, sql, params, sw.toString());
+					this.logRequest(p.getProperty(config + ".jdbc.logcon"), p, logCon, sql, params, sw.toString(), swRealVals.toString());
 					logCon.close();
 				}
 				sw.close();
