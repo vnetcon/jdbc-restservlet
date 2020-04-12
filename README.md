@@ -67,6 +67,36 @@ email.port=587
 email.user=<email username>
 email.pass=<password>
 ```
+If you are using gmail for sending emails you need to allow "unsecure applications" to send email before this start to work.
+  
+## Making api calls from javascript
+Below are couple of examples  of making api requests. In general all the requests shoul be done the same way html form send requests to server.
+```javascript
+// the base url
+const appdataurl = 'http://localhost:8040/jdbc-rest/rest/drill/';
+
+// method for sending requests
+makeRequest(endpoint, fdata, callback) {
+    fetch(endpoint, {
+        headers: { "Content-Type": "application/x-www-form-urlencoded; charset=utf-8" },
+        method: 'post',
+        body: fdata
+    })
+        .then(function (response) {
+            return response.json();
+        })
+        .then(data => callback(true, data))
+        .catch(e => callback(false, e));
+}
+
+click_AjaxCall = function(){
+    var d = new FormData();
+    d.append("paramname", 'paramvalue'); // put the param_name in sql should be following '{r_paramname}'
+    makeRequest(appdataurl + "/endpoin", d, page.click_AjaxCallReply);
+}
+
+
+```
 
 
 ## Key features
