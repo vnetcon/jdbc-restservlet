@@ -156,7 +156,7 @@ sendEmailReply(success, data){
 * email endpoint for sending emails
 * upload endpoint for storing files into database (under development)
 * download endpoint for retrieving files from database (under development)
-* From GDBR point of view rest api requests (sselect/insert/update/delete) are logged automtically to REST_SERVLET_LOG table
+* From GDPR point of view rest api requests (sselect/insert/update/delete) are logged automtically to REST_SERVLET_LOG table
   
 
 <!--
