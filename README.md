@@ -102,7 +102,7 @@ email.pass=<password>
 If you are using gmail for sending emails you need to allow "unsecure applications" to send email before this start to work.
   
 ## Making api calls from javascript
-Below are couple of examples  of making api requests. In general all the requests shoul be done the same way html form send requests to server.
+Below are couple of examples  of making api requests. In general all the requests shoul be done the same way html form send requests to server. For easy web app development we have also created a [page.js framework](https://github.com/vnetcon/page.js). 
 ```javascript
 // the base url. The "default" in url point to database connection 
 // you have configured in database.properties file (the preofix in properties)
