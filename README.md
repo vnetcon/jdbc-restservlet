@@ -10,11 +10,36 @@ In short web developer need to write only client side code and sql - no need for
 
 And thats it.
 
-Key features:
+## Design your rest endpoint: Create a sql query that return the values you need
+![jdbc-servlet_queryeditor](http://vnetcon.s3-website-eu-west-1.amazonaws.com/img/jdbc-servlet_queryeditor.PNG)
+  
+## Create an rest endpoint: Add your sql query to REST_SERVLET_CONFIG table
+![jdbc-servlet_configview](http://vnetcon.s3-website-eu-west-1.amazonaws.com/img/jdbc-servlet_configview.PNG)
+  
+## View and debug rest api calls: View all your requests from REST_SERVLET_LOG table
+![jdbc-servlet_logview](http://vnetcon.s3-website-eu-west-1.amazonaws.com/img/jdbc-servlet_logview.PNG)
+  
+## Confgure database connection: Simply edit text file
+All configurations jdbc rest configuration are in one file: /opt/vnetcon/conf/database.properties (c:\opt\vnetcon\conf\database.properties in windows).
+Below is a simple configuration against portgresql database
+
+```
+# connection properties
+default.jdbc.driver=org.postgresql.Driver
+default.jdbc.url=jdbc:postgresql://localhost:5432/postgres
+default.jdbc.user=<your database username>
+default.jdbc.pass=<your database password>
+default.jdbc.logcon=default
+```
+
+## Key features
 * REST API based on [jdbc-rest](https://github.com/vnetcon/jdbc-rest) driver (select/insert/update/delete)
 * email endpoint for sending emails
 * upload endpoint for storing files into database (under development)
 * download endpoint for retrieving files from database (under development)
+* From GDBR point of view rest api requests (sselect/insert/update/delete) are logged automtically to REST_SERVLET_LOG table
+  
+
 
 ## Quick Start (for windows 64bit) - updated 06/03/2020 (dd/mm/yyyy)
 For setting up the development environment you don't need install anything. 
