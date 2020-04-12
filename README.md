@@ -212,7 +212,7 @@ and in here you configure the url endpoint. This table must locate in VNETCON sh
 If you want to use this in closed code project or product you can buy a 99 USD license [here](https://vnetcon.com)  
 If you think the price is too low or high you can also change the price there :)
   
-We offer also consulting, online traing and support so you don't need to figure these all aout on your own.
+We offer also consulting, online traing and support so you don't need to figure these all out on your own.
 
 ## sql syntax and parameters
 In short the idea is to contert normal sql to json by with --[json] comment. This comment will tell the driver 
