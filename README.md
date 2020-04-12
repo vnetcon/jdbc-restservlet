@@ -123,10 +123,10 @@ makeRequest(endpoint, fdata, callback) {
 click_AjaxCall = function(){
     var d = new FormData();
     d.append("paramname", 'paramvalue'); // put the param_name in sql should be following '{r_paramname}'
-    makeRequest(appdataurl + "/endpoin", d, page.click_AjaxCallReply);
+    makeRequest(appdataurl + "/endpoin", d, click_AjaxCallReply);
 }
 
-AjaxCallReply = function (success, data){
+clic_AjaxCallReply = function (success, data){
     console.log("reply: " + success);
 }
 ```
