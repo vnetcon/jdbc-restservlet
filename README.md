@@ -58,6 +58,36 @@ CREATE TABLE "VNETCON"."REST_SERVLET_LOG" (
 
 ```
   
+You can configure multiple database connections to database.properteis file. In short this mean that jdbc-restservlet can connect to 1-n databases same time and servee as rest api endpoint to several data sources.
+One option to bind several databases into one and combine those data with sql is to use drill.
+Below is an example configuration where drill is used for quering the data and REST_SERVLET_CONFIG and REST_SERVLET_LOG are configured to postgresql database.
+  
+```
+# connection properties
+default.jdbc.driver=org.postgresql.Driver
+default.jdbc.url=jdbc:postgresql://localhost:5432/postgres
+default.jdbc.user=<username>
+default.jdbc.pass=<password>
+default.jdbc.logcon=default
+
+# rest servlet properties
+# this is used when writing log events
+default.jdbc.timestampfunc=current_timestamp
+
+# connection properties
+drill.jdbc.driver=org.apache.drill.jdbc.Driver
+drill.jdbc.url=jdbc:drill:drillbit=localhost:31010
+drill.jdbc.user=miki
+drill.jdbc.pass=miki
+
+# restservlet properties
+drill.jdbc.restcon=default
+drill.jdbc.logcon=default
+
+```
+
+
+
 ## Enable email sending: Configure your email settings
 ```
 email.from=<sender email address>
@@ -72,8 +102,9 @@ If you are using gmail for sending emails you need to allow "unsecure applicatio
 ## Making api calls from javascript
 Below are couple of examples  of making api requests. In general all the requests shoul be done the same way html form send requests to server.
 ```javascript
-// the base url
-const appdataurl = 'http://localhost:8040/jdbc-rest/rest/drill/';
+// the base url. The "default" in url point to database connection 
+// you have configured in database.properties file (the preofix in properties)
+const appdataurl = 'http://localhost:8040/jdbc-rest/rest/default/';
 
 // method for sending requests
 makeRequest(endpoint, fdata, callback) {
@@ -95,7 +126,9 @@ click_AjaxCall = function(){
     makeRequest(appdataurl + "/endpoin", d, page.click_AjaxCallReply);
 }
 
-
+AjaxCallReply = function (success, data){
+    console.log("reply: " + success);
+}
 ```
 
 
