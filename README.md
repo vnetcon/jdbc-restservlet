@@ -31,6 +31,33 @@ default.jdbc.user=<your database username>
 default.jdbc.pass=<your database password>
 default.jdbc.logcon=default
 ```
+  
+Below are required sql statements for creating necessary tables to Postgresql database
+```sql
+CREATE SCHEMA "VNETCON";
+
+CREATE TABLE "VNETCON"."REST_SERVLET_CONFIG" (
+	"REST_ENDPOINT_ID" varchar(100) NOT NULL,
+	"REST_ENDPOINT" varchar(100) NOT NULL,
+	"VERSION" varchar(100) NOT NULL,
+	"ALLOWED_TOKENS" varchar(2000) NULL DEFAULT 'ALL'::character varying,
+	"ALLOWED_IPADDRESSES" varchar(2000) NULL DEFAULT 'ALL'::character varying,
+	"JSON_SQL" varchar(2000) NOT NULL,
+	"ENABLED" int4 NULL DEFAULT 1,
+	CONSTRAINT "REST_SERVLET_CONFIG_pkey" PRIMARY KEY ("REST_ENDPOINT_ID")
+);
+
+CREATE TABLE "VNETCON"."REST_SERVLET_LOG" (
+	"LOGTIME" timestamp NULL,
+	"SQL" text NULL,
+	"REQUEST_PARAMS" text NULL,
+	"RESPONSE_JSON" text NULL,
+	"REAL_VALUES" text NULL,
+	"MESSAGE" text NULL
+);
+
+```
+
 
 ## Key features
 * REST API based on [jdbc-rest](https://github.com/vnetcon/jdbc-rest) driver (select/insert/update/delete)
