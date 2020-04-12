@@ -125,7 +125,7 @@ makeRequest(endpoint, fdata, callback) {
 // ajax call for retrieving data from dataabse
 click_AjaxCall(){
     var d = new FormData();
-    d.append("paramname", 'paramvalue'); // put the param_name in sql should be following '{r_paramname}'
+    d.append("paramname", 'paramvalue'); // the paramname in sql should be following '{r_paramname}'. This will be replaced with the value put here.
     makeRequest(appdataurl + "/endpoin", d, click_AjaxCallReply);
 }
 
