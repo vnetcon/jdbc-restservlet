@@ -3,10 +3,10 @@ This servlet is build on [jdbc-rest](https://github.com/vnetcon/jdbc-rest) drive
 The idea is to offer an out-of-the box REST API solution for web developers (Angular, React, Vue etc.). 
 In short web developer need to write only client side code and sql - no need for middle tier applications for accessing database. In our mind the development environment would be something like
 
-* Angular/React/Vue etc project
-* Proxy configuration from dev server for /rest to jdbc-rest api server
-* Web development as usual
-* rest development with SQL for example in DBeaver
+* Angular/React/Vue etc project using the IDE/Editor you like
+* JDBC-RESTSERVLET web server on configured to use your development database
+* DBeaver for accessing database. This will be your backend & rest api development ide
+* Browser enabled with CORS for accessing the JDBC-RESTSERVLET during the development (e.g. chrome with [CORS plugin](https://chrome.google.com/webstore/detail/moesif-orign-cors-changer/digfbfaphojjndkpccljibejjbppifbc)
 
 And thats it.
 
