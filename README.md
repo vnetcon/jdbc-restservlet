@@ -77,8 +77,8 @@ default.jdbc.timestampfunc=current_timestamp
 # connection properties
 drill.jdbc.driver=org.apache.drill.jdbc.Driver
 drill.jdbc.url=jdbc:drill:drillbit=localhost:31010
-drill.jdbc.user=miki
-drill.jdbc.pass=miki
+drill.jdbc.user=<username if authentication is configured>
+drill.jdbc.pass=<password if authentication is configured>
 
 # restservlet properties
 drill.jdbc.restcon=default
