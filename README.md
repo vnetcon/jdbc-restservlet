@@ -122,15 +122,32 @@ makeRequest(endpoint, fdata, callback) {
         .catch(e => callback(false, e));
 }
 
+// ajax call for retrieving data from dataabse
 click_AjaxCall = function(){
     var d = new FormData();
     d.append("paramname", 'paramvalue'); // put the param_name in sql should be following '{r_paramname}'
     makeRequest(appdataurl + "/endpoin", d, click_AjaxCallReply);
 }
 
+// handle retrieved data here
 clic_AjaxCallReply = function (success, data){
     console.log("reply: " + success);
 }
+
+// ajax call for sending email
+sendEmail = function(){
+    var msg = "Message in html format";
+    var d = new FormData();
+    d.append('email', 'to-aimail-address');
+    d.append('subject', 'Subject for email');()
+    d.append('message', msg);
+    makeRequest(appdataurl + "/email", d, sendEmaillReply);
+}
+
+// handle email send reply here
+sendEmailReply = function(success, data){
+}
+
 ```
 
 
