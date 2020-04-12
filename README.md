@@ -77,7 +77,7 @@ email.pass=<password>
 * From GDBR point of view rest api requests (sselect/insert/update/delete) are logged automtically to REST_SERVLET_LOG table
   
 
-
+<!--
 ## Quick Start (for windows 64bit) - updated 06/03/2020 (dd/mm/yyyy)
 For setting up the development environment you don't need install anything. 
 You just download the zip file and start the downloaded software with following steps:  
@@ -93,6 +93,8 @@ You just download the zip file and start the downloaded software with following 
 
 After this you can point your browser to http://localhost:8080/jdbc-rest/rest/default/getUser/v1?userid=3 
 to see the demo json
+-->
+
 
 ## Building
 If you want to build the war file your self and deploy it to some other servlet engine, take the following steps. Before these steps you need to build the [jdbc-rest](https://github.com/vnetcon/jdbc-rest) jdbc driver to get it to your local maven repository.
