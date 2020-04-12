@@ -57,6 +57,16 @@ CREATE TABLE "VNETCON"."REST_SERVLET_LOG" (
 );
 
 ```
+  
+## Enable email sending: Configure your email settings
+```
+email.from=<sender email address>
+email.replyto=<replyto address>
+email.host=smtp.gmail.com
+email.port=587
+email.user=<email username>
+email.pass=<password>
+```
 
 
 ## Key features
