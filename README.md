@@ -5,7 +5,7 @@ In short web developer need to write only client side code and sql - no need for
 
 * Angular/React/Vue etc project using the IDE/Editor you like
 * JDBC-RESTSERVLET web server running and configured to use your development database
-* DBeaver for accessing database. This will be your backend & rest api development ide
+* DBeaver for accessing database. This will be your backend & rest api development ide. For this you need to configure a database connection using [jdbc-rest](https://github.com/vnetcon/jdbc-rest) driver.
 * Browser enabled with CORS for accessing the JDBC-RESTSERVLET during the development (e.g. chrome with [CORS plugin](https://chrome.google.com/webstore/detail/moesif-orign-cors-changer/digfbfaphojjndkpccljibejjbppifbc)
 
 And thats it.
