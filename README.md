@@ -89,6 +89,8 @@ drill.jdbc.logcon=default
 
 
 ## Enable email sending: Configure your email settings
+Email configuration file is /opt/vnetcon/conf/email.properties (c:\opt\vnetcon\conf\email.properties in windows).
+Below is an example.
 ```
 email.from=<sender email address>
 email.replyto=<replyto address>
