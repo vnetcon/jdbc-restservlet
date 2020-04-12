@@ -139,7 +139,7 @@ sendEmail = function(){
     var msg = "Message in html format";
     var d = new FormData();
     d.append('email', 'to-aimail-address');
-    d.append('subject', 'Subject for email');()
+    d.append('subject', 'Subject for email');
     d.append('message', msg);
     makeRequest(appdataurl + "/email", d, sendEmaillReply);
 }
