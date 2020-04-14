@@ -194,7 +194,7 @@ To start the development servlet engine.
 ## Suported databases
 In theory all databases that have JDBC driver. Postgresql, Oracle, SQL Server etc.
   
-You can add your database jdbc driver by creating a libs folder and put your jdbc driver jar files there. Thos folder should locate at the root level where the pom.xml locates. All jars added to this folder will be added to war so you don't need to add thos to servlet engine (e.g. tomcat, apache karaf etc.)
+You can add your database jdbc driver by creating a libs folder and put your jdbc driver jar files there. The folder should locate at the root level where the pom.xml locates. All jars added to this folder will be added to war so you don't need to add those to servlet engine (e.g. tomcat, apache karaf etc.)
 
 ## REST_SERVLET_CONFIG -table
 This is the key table in REST API server. Into this table all sql statements should be stored 
