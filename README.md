@@ -75,9 +75,9 @@ CREATE TABLE "VNETCON"."REST_SERVLET_FILE" (
 	"CONTENTTYPE" varchar(100) NOT NULL,
 	"LENGTH" int4 NOT NULL,
 	"CONTENT" bytea NOT NULL,
+	"LOADTIME" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT rest_servlet_file_pk PRIMARY KEY ("FILEID")
 );
-
 ```
   
 You can configure multiple database connections to database.properteis file. In short this mean that jdbc-restservlet can connect to 1-n databases same time and servee as rest api endpoint to several data sources.
