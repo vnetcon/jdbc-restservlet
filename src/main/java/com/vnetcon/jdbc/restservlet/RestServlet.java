@@ -8,6 +8,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.Reader;
@@ -27,6 +31,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.mail.Message;
 import javax.mail.PasswordAuthentication;
@@ -71,6 +76,11 @@ public class RestServlet extends HttpServlet {
 	private static final String timestampfunc = "timestampfunc";
 	private static final String logSql = "INSERT INTO \"" + configSchema + "\".\"REST_SERVLET_LOG\" \r\n" +
 	" (\"LOGTIME\", \"SQL\", \"REQUEST_PARAMS\", \"RESPONSE_JSON\", \"REAL_VALUES\", \"MESSAGE\") VALUES ('{" + timestampfunc + "}',?,?,?,?,?)";
+
+	private static final String uploadSql = "INSERT INTO \"" + configSchema + "\".\"REST_SERVLET_FILE\" \r\n" +
+	" (\"FILEID\", \"FILENAME\", \"CONENTTYPE\", \"LENGTH\", \"CONTENT\") VALUES (?,?,?,?,?)";
+	
+	
     private static final String UPLOAD_DIRECTORY = "upload";
     
     // upload settings
@@ -83,6 +93,11 @@ public class RestServlet extends HttpServlet {
     class ExecSQL {
     	public String sqltype;
     	public String sql;
+    }
+    
+    class UploadInfo {
+    	public String fileid;
+    	public String filename;
     }
     
 	@Override
@@ -134,16 +149,38 @@ public class RestServlet extends HttpServlet {
 		
 	}
 	
-	private void uploadFile(HttpServletRequest request, HttpServletResponse response) throws Exception {
-		/*
+	
+    private void storeFileToDB(String config, Properties props, Connection con, String fileid, String filename, String contenttype, File storeFile) throws Exception {
+		PreparedStatement pstmt = con.prepareStatement(uploadSql);
+		pstmt.setString(1, fileid);
+		pstmt.setString(2, filename);
+		pstmt.setString(3, contenttype);
+		pstmt.setInt(4, (int)storeFile.length());
+		
+		FileInputStream fis = new FileInputStream(storeFile);
+    	if(props.getProperty(config + ".jdbc.driver").toLowerCase().indexOf("postgresql") > -1) {
+    		pstmt.setBinaryStream(5, fis, storeFile.length());
+		} else {
+			//TODO: check that this work with other databases too.
+    		pstmt.setBinaryStream(5, fis, storeFile.length());
+		}
+		pstmt.executeUpdate();
+    	pstmt.close();
+    	fis.close();
+    }
+
+	
+	private List<UploadInfo> uploadFile(String config, Properties props, Connection con, HttpServletRequest request, HttpServletResponse response) throws Exception {
+
         if (!ServletFileUpload.isMultipartContent(request)) {
             // if not, we stop here
             PrintWriter writer = response.getWriter();
             writer.println("Error: Form must has enctype=multipart/form-data.");
             writer.flush();
-            return;
+            return null;
         }
  
+        List<UploadInfo> fList = new ArrayList<UploadInfo>();
         // configures upload settings
         DiskFileItemFactory factory = new DiskFileItemFactory();
         // sets memory threshold - beyond which files are stored in disk
@@ -180,14 +217,19 @@ public class RestServlet extends HttpServlet {
                 for (FileItem item : formItems) {
                     // processes only fields that are not form fields
                     if (!item.isFormField()) {
+                        String fileid = UUID.randomUUID().toString();
                         String fileName = new File(item.getName()).getName();
                         String filePath = uploadPath + File.separator + fileName;
+                        String contentType = item.getContentType();
                         File storeFile = new File(filePath);
  
                         // saves the file on disk
                         item.write(storeFile);
-                        request.setAttribute("message",
-                            "Upload has been done successfully!");
+                        request.setAttribute("message", "Upload has been done successfully!");
+                        
+                        storeFileToDB(config, props, con, fileid, fileName, contentType, storeFile);
+                        
+                        storeFile.delete();
                     }
                 }
             }
@@ -195,10 +237,15 @@ public class RestServlet extends HttpServlet {
             request.setAttribute("message",
                     "There was an error: " + ex.getMessage());
         }
+        
+        /*
         // redirects client to message page
         getServletContext().getRequestDispatcher("/message.jsp").forward(
                 request, response);	
-                */
+        */
+        
+        return fList;
+
     }
 
 	private void downloadFile(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -339,7 +386,9 @@ public class RestServlet extends HttpServlet {
 			params.put("endpoint", endpoint);
 				
 			if("upload".equals(endpoint)) {
-				this.uploadFile(req, resp);
+				con = DriverManager.getConnection("jdbc:vnetcon:rest://" + config, p.getProperty(config + ".jdbc.user"), p.getProperty(config + ".jdbc.pass"));
+				this.uploadFile(config, p, con, req, resp);
+				con.close();
 				return;
 			}
 

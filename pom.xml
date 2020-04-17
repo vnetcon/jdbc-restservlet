@@ -43,13 +43,11 @@
 	    <scope>provided</scope>
 	</dependency>
   
-<!--   
 <dependency>
     <groupId>commons-fileupload</groupId>
     <artifactId>commons-fileupload</artifactId>
     <version>1.4</version>
 </dependency>
--->
 
 <dependency>
     <groupId>javax.mail</groupId>
