@@ -34,8 +34,10 @@ default.jdbc.logcon=default
   
 Below are required sql statements for creating necessary tables to Postgresql database
 ```sql
+-- these tables must locate in VNETCON schmea and all the names must be upper case
 CREATE SCHEMA "VNETCON";
 
+-- this is for storing rest endpoint infomation 
 CREATE TABLE "VNETCON"."REST_SERVLET_CONFIG" (
 	"REST_ENDPOINT_ID" varchar(100) NOT NULL,
 	"REST_ENDPOINT" varchar(100) NOT NULL,
@@ -46,6 +48,7 @@ CREATE TABLE "VNETCON"."REST_SERVLET_CONFIG" (
 	CONSTRAINT "REST_SERVLET_CONFIG_pkey" PRIMARY KEY ("REST_ENDPOINT_ID")
 );
 
+-- this is for storing sql statements executed during the rest endpoint call
 CREATE TABLE "VNETCON"."REST_SERVLET_SQL" (
 	"REST_SQL_ID" varchar(100) NOT NULL,
 	"REST_ENDPOINT" varchar(100) NOT NULL,
@@ -55,6 +58,7 @@ CREATE TABLE "VNETCON"."REST_SERVLET_SQL" (
 	CONSTRAINT "REST_SERVLET_SQL_pkey" PRIMARY KEY ("REST_SQL_ID")
 );
 
+-- this is the log table where all rest requests are logged
 CREATE TABLE "VNETCON"."REST_SERVLET_LOG" (
 	"LOGTIME" timestamp NULL,
 	"SQL" text NULL,
@@ -62,6 +66,16 @@ CREATE TABLE "VNETCON"."REST_SERVLET_LOG" (
 	"RESPONSE_JSON" text NULL,
 	"REAL_VALUES" text NULL,
 	"MESSAGE" text NULL
+);
+
+-- this is for storing web applications files
+CREATE TABLE "VNETCON"."REST_SERVLET_FILE" (
+	"FILEID" varchar(100) NOT NULL,
+	"FILENAME" varchar(100) NOT NULL,
+	"CONTENTTYPE" varchar(100) NOT NULL,
+	"LENGTH" int4 NOT NULL,
+	"CONTENT" bytea NOT NULL,
+	CONSTRAINT rest_servlet_file_pk PRIMARY KEY ("FILEID")
 );
 
 ```
