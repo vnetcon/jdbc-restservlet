@@ -19,6 +19,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -50,14 +51,17 @@ public class RestServlet extends HttpServlet {
 	private static final String tokenHeader = "vnetcon-token";
 	private static final String configSchema = "VNETCON";
 	private static final String configSelect = "SELECT\r\n" + 
-			" \"JSON_SQL\" \r\n" + 
+			" \"rs\".\"SQLTYPE\", \r\n" + 
+			" \"rs\".\"JSON_SQL\" \r\n" + 
 			"FROM\r\n" + 
-			"\"" + configSchema + "\".\"REST_SERVLET_CONFIG\" \r\n" + 
+			"\"" + configSchema + "\".\"REST_SERVLET_CONFIG\" rc \r\n" + 
+			" inner join \"" + configSchema + "\".\"REST_SERVLET_SQL\" rs ON rc.\"REST_ENDPOINT\" = rs.\"REST_ENDPOINT\" \r\n" + 
 			"WHERE\r\n" + 
-			" \"REST_ENDPOINT\" = ?\r\n" + 
-			" AND \"VERSION\" = ?\r\n" + 
-			" AND (\"ALLOWED_TOKENS\" = 'ALL' OR \"ALLOWED_TOKENS\" LIKE ?)\r\n" + 
-			" AND \"ENABLED\" = 1";
+			" rc.\"REST_ENDPOINT\" = ?\r\n" + 
+			" AND rc.\"VERSION\" = ?\r\n" + 
+			" AND (rc.\"ALLOWED_TOKENS\" = 'ALL' OR \"ALLOWED_TOKENS\" LIKE ?)\r\n" + 
+			" AND rc.\"ENABLED\" = 1"
+			+ "ORDER BY rs.\"ORDERNUM\"";
 
 
 	private static final String timestampfunc = "timestampfunc";
@@ -69,9 +73,13 @@ public class RestServlet extends HttpServlet {
     private static final int MEMORY_THRESHOLD   = 1024 * 1024 * 3;  // 3MB
     private static final int MAX_FILE_SIZE      = 1024 * 1024 * 40; // 40MB
     private static final int MAX_REQUEST_SIZE   = 1024 * 1024 * 50; // 50MB	
-
     
     private Gson gson = new Gson();
+
+    class ExecSQL {
+    	public String sqltype;
+    	public String sql;
+    }
     
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -102,7 +110,8 @@ public class RestServlet extends HttpServlet {
 		return dbProps;
 	}
 	
-	private String getJsonSql(Connection con, String endpoint, String version, String accesstoken) throws Exception {
+	private List<ExecSQL> getJsonSql(Connection con, String endpoint, String version, String accesstoken) throws Exception {
+		List<ExecSQL> aRet = new ArrayList<ExecSQL>();
 		String sql = null;
 		PreparedStatement stmt = con.prepareStatement(configSelect);
 		stmt.setString(1, endpoint);
@@ -110,11 +119,14 @@ public class RestServlet extends HttpServlet {
 		stmt.setString(3, "'%\"" + accesstoken + "\"%'");
 
 		ResultSet rs = stmt.executeQuery();
-		if(rs.next()) {
-			sql = rs.getString(1);
+		while(rs.next()) {
+			ExecSQL o = new ExecSQL();
+			o.sqltype = rs.getString(1);
+			o.sql = rs.getString(2);
+			aRet.add(o);
 		}
 
-		return sql;
+		return aRet;
 		
 	}
 	
@@ -269,6 +281,7 @@ public class RestServlet extends HttpServlet {
 		
 		Properties p = null;
 		String config = null;
+		List<ExecSQL> esqls = null;
 		String sql = null;
 		Map<String, String> params = new HashMap<String, String>();
 		StringWriter swRealVals = new StringWriter();
@@ -342,6 +355,11 @@ public class RestServlet extends HttpServlet {
 			
 			//System.out.println("config: " + config + " user: " + p.getProperty(config + ".jdbc.user"));
 			con = DriverManager.getConnection("jdbc:vnetcon:rest://" + config, p.getProperty(config + ".jdbc.user"), p.getProperty(config + ".jdbc.pass"));
+			try {
+				//drill throws exception from this
+				con.setAutoCommit(false);
+			}catch(Exception e) {
+			}
 			
 			if(p.getProperty(config + ".jdbc.logcon") != null) {
 				String logconConfig = p.getProperty(config + ".jdbc.logcon");
@@ -353,77 +371,17 @@ public class RestServlet extends HttpServlet {
 			}
 			
 			((RestConnection)con).setQueryParams(params);
+			
 			if(p.getProperty(config + ".jdbc.restcon") != null) {
 				restCon = DriverManager.getConnection("jdbc:vnetcon:rest://" + p.getProperty(config + ".jdbc.restcon"), p.getProperty(config + ".jdbc.user"), p.getProperty(config + ".jdbc.pass"));
-				sql = getJsonSql(restCon, endpoint, version, accesstoken);
+				esqls = getJsonSql(restCon, endpoint, version, accesstoken);
 				restCon.close();
 			} else {
-				sql = getJsonSql(con, endpoint, version, accesstoken);
+				esqls = getJsonSql(con, endpoint, version, accesstoken);
 			}
 
-			if(sql != null) {
+			if(esqls.size() == 0) {
 				StringWriter sw = new StringWriter();
-				Statement stmt = con.createStatement();
-				ResultSet rs = stmt.executeQuery(sql);
-				char[] buf = new char[1024];
-				int read = 0;
-				String delim = "";
-				
-				if(writeInArray && rs != null) {
-					w.write("{ \"results\": [");
-					sw.write("{ \"results\": [");
-					w.flush();
-				}
-				
-				while(rs != null && rs.next()) {
-					Reader c = rs.getClob(1).getCharacterStream();
-					if(writeInArray) {
-						w.write(delim);
-						sw.write(delim);
-						w.flush();
-					}
-					while((read = c.read(buf)) > -1) {
-						if(writeInOneRow) {
-							String s = new String(buf, 0, read);
-							s = s.replace("\r", "");
-							s = s.replace("\n", "");
-							w.write(s);
-							sw.write(s);
-							w.flush();
-						} else {
-							w.write(buf, 0, read);
-							sw.write(buf, 0, read);
-							w.flush();
-						}
-					}
-					delim = ",";
-					w.flush();
-					out.flush();
-					
-					c = rs.getClob(2).getCharacterStream();
-					while ((read = c.read(buf)) > -1) {
-						swRealVals.write(buf, 0, read);
-					}
-					
-				}
-				if(writeInArray && rs != null) {
-					w.write("]}");
-					sw.write("]}");
-					w.flush();
-				}
-				
-				stmt.close();
-				sw.flush();
-				if(logCon != null) {
-					this.logRequest(p.getProperty(config + ".jdbc.logcon"), p, logCon, sql, params, sw.toString(), swRealVals.toString(), "ok");
-					logCon.close();
-				}
-				sw.close();
-				con.close();
-				out.flush();
-				out.close();
-				return;
-			} else {
 				w.write("{\"status\":\"No endpooint\"}");
 				w.flush();
 				out.flush();
@@ -431,9 +389,97 @@ public class RestServlet extends HttpServlet {
 				return;
 			}
 			
+			for(ExecSQL esql : esqls) {
+				StringWriter sw = new StringWriter();
+				sql = esql.sql;
+				
+				if("SELECT".equals(esql.sqltype)) {
+					Statement stmt = con.createStatement();
+					ResultSet rs = stmt.executeQuery(sql);
+					char[] buf = new char[1024];
+					int read = 0;
+					String delim = "";
+					
+					if(writeInArray && rs != null) {
+						w.write("{ \"results\": [");
+						sw.write("{ \"results\": [");
+						w.flush();
+					}
+					
+					while(rs != null && rs.next()) {
+						Reader c = rs.getClob(1).getCharacterStream();
+						if(writeInArray) {
+							w.write(delim);
+							sw.write(delim);
+							w.flush();
+						}
+						while((read = c.read(buf)) > -1) {
+							if(writeInOneRow) {
+								String s = new String(buf, 0, read);
+								s = s.replace("\r", "");
+								s = s.replace("\n", "");
+								w.write(s);
+								sw.write(s);
+								w.flush();
+							} else {
+								w.write(buf, 0, read);
+								sw.write(buf, 0, read);
+								w.flush();
+							}
+						}
+						delim = ",";
+						w.flush();
+						out.flush();
+						
+						c = rs.getClob(2).getCharacterStream();
+						while ((read = c.read(buf)) > -1) {
+							swRealVals.write(buf, 0, read);
+						}
+						
+					}
+					if(writeInArray && rs != null) {
+						w.write("]}");
+						sw.write("]}");
+						w.flush();
+					}
+					
+					stmt.close();
+					sw.flush();
+					if(logCon != null) {
+						this.logRequest(p.getProperty(config + ".jdbc.logcon"), p, logCon, sql, params, sw.toString(), swRealVals.toString(), "ok");
+						logCon.close();
+					}
+					sw.close();
+					out.flush();
+				} else {
+					//TODO: update executions here
+					Statement stmt = con.createStatement();
+					stmt.execute(sql);
+					stmt.close();
+				}
+				
+			}
+
+			try {
+				// because drill don't suppoert transactions
+				con.commit();
+			}catch(Exception e) {
+			}
+			out.close();
+			
+			try {
+				con.close();
+			} catch (Exception e1) {
+			}
+			
 		}catch(Exception e) {
 			//throw new ServletException(e);
 			
+			try {
+				// because drill don't suppoert transactions
+				con.rollback();
+			}catch(Exception ex) {
+			}
 			try {
 				con.close();
 			} catch (Exception e1) {
