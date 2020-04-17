@@ -24,7 +24,9 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.mail.Message;
 import javax.mail.PasswordAuthentication;
@@ -34,6 +36,8 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 /*
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -270,6 +274,30 @@ public class RestServlet extends HttpServlet {
 		Transport.send(message);
 	}
 	
+	private Map<String, String> parseJsonParams(HttpServletRequest req) throws Exception {
+		Map<String, String> params = new HashMap<String, String>();
+		Reader r = req.getReader();
+		StringBuilder sb = new StringBuilder();
+		char[] cbuf = new char[1024];
+		String strJson = null;
+		JsonObject json = null;
+		int iRead = -1;
+		
+		while((iRead = r.read(cbuf)) > -1) {
+			sb.append(cbuf, 0, iRead);
+		}
+		
+		strJson = sb.toString();
+		json = gson.fromJson(strJson, JsonObject.class);
+		Set<Entry<String, JsonElement>> entrySet = json.entrySet();
+		for(Map.Entry<String,JsonElement> entry : entrySet){
+			params.put(entry.getKey(), json.get(entry.getKey()).getAsString());
+		}
+		
+		r.close();
+		return params;
+	}
+	
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		OutputStream out = resp.getOutputStream();
@@ -287,6 +315,11 @@ public class RestServlet extends HttpServlet {
 		StringWriter swRealVals = new StringWriter();
 		
 		try {
+			
+			if(req.getContentType().toLowerCase().indexOf("json") > -1) {
+				params = parseJsonParams(req);
+			}
+			
 			p = this.loadProperties();
 			resp.setContentType("application/json; charset=UTF-8");
 			Class.forName("com.vnetcon.jdbc.rest.RestDriver");
