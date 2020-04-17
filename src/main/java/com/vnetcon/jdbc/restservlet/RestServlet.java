@@ -316,7 +316,7 @@ public class RestServlet extends HttpServlet {
 		
 		try {
 			
-			if(req.getContentType().toLowerCase().indexOf("json") > -1) {
+			if(req.getContentType() != null && req.getContentType().toLowerCase().indexOf("json") > -1) {
 				params = parseJsonParams(req);
 			}
 			
