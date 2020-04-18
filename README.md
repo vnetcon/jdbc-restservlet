@@ -1,4 +1,6 @@
 # jdbc-restservlet
+Turn your SQL to REST API without middle tier coding.
+
 This servlet is build on [jdbc-rest](https://github.com/vnetcon/jdbc-rest) driver and it serves as REST API server.
 The idea is to offer an out-of-the box REST API solution for web developers (Angular, React, Vue etc.). 
 In short web developer need to write only client side code and sql - no need for middle tier applications for accessing database. In our mind the development environment would be something like
@@ -9,6 +11,16 @@ In short web developer need to write only client side code and sql - no need for
 * Browser enabled with CORS for accessing the JDBC-RESTSERVLET during the development (e.g. chrome with [CORS plugin](https://chrome.google.com/webstore/detail/moesif-orign-cors-changer/digfbfaphojjndkpccljibejjbppifbc)
 
 And thats it.
+
+
+## Key features
+* REST API based on [jdbc-rest](https://github.com/vnetcon/jdbc-rest) driver (select/insert/update/delete)
+* email endpoint for sending emails
+* upload endpoint for storing files into database
+* download endpoint for retrieving files from database (under development)
+* From GDPR point of view rest api requests (sselect/insert/update/delete) are logged automtically to REST_SERVLET_LOG table
+  
+
 
 ## Design your rest endpoint: Create a sql query that return the values you need
 ![jdbc-servlet_queryeditor](http://vnetcon.s3-website-eu-west-1.amazonaws.com/img/jdbc-servlet_queryeditor.PNG)
@@ -172,14 +184,6 @@ sendEmailReply(success, data){
 
 ```
 
-
-## Key features
-* REST API based on [jdbc-rest](https://github.com/vnetcon/jdbc-rest) driver (select/insert/update/delete)
-* email endpoint for sending emails
-* upload endpoint for storing files into database (under development)
-* download endpoint for retrieving files from database (under development)
-* From GDPR point of view rest api requests (sselect/insert/update/delete) are logged automtically to REST_SERVLET_LOG table
-  
 
 <!--
 ## Quick Start (for windows 64bit) - updated 06/03/2020 (dd/mm/yyyy)
