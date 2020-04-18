@@ -78,7 +78,7 @@ public class RestServlet extends HttpServlet {
 	" (\"LOGTIME\", \"SQL\", \"REQUEST_PARAMS\", \"RESPONSE_JSON\", \"REAL_VALUES\", \"MESSAGE\") VALUES ('{" + timestampfunc + "}',?,?,?,?,?)";
 
 	private static final String uploadSql = "INSERT INTO \"" + configSchema + "\".\"REST_SERVLET_FILE\" \r\n" +
-	" (\"FILEID\", \"FILENAME\", \"CONENTTYPE\", \"LENGTH\", \"CONTENT\") VALUES (?,?,?,?,?)";
+	" (\"FILEID\", \"FILENAME\", \"CONTENTTYPE\", \"LENGTH\", \"CONTENT\") VALUES (?,?,?,?,?)";
 	
 	
     private static final String UPLOAD_DIRECTORY = "upload";
@@ -164,17 +164,18 @@ public class RestServlet extends HttpServlet {
 			//TODO: check that this work with other databases too.
     		pstmt.setBinaryStream(5, fis, storeFile.length());
 		}
+
 		pstmt.executeUpdate();
     	pstmt.close();
     	fis.close();
     }
 
 	
-	private List<UploadInfo> uploadFile(String config, Properties props, Connection con, HttpServletRequest request, HttpServletResponse response) throws Exception {
-
+	private List<UploadInfo> uploadFile(String config, Properties props, Connection con, HttpServletRequest request, HttpServletResponse response, PrintWriter writer) throws Exception {
+//        PrintWriter writer = response.getWriter();
         if (!ServletFileUpload.isMultipartContent(request)) {
             // if not, we stop here
-            PrintWriter writer = response.getWriter();
+//            PrintWriter writer = response.getWriter();
             writer.println("Error: Form must has enctype=multipart/form-data.");
             writer.flush();
             return null;
@@ -186,7 +187,8 @@ public class RestServlet extends HttpServlet {
         // sets memory threshold - beyond which files are stored in disk
         factory.setSizeThreshold(MEMORY_THRESHOLD);
         // sets temporary location to store files
-        factory.setRepository(new File(System.getProperty("java.io.tmpdir")));
+//        factory.setRepository(new File(System.getProperty("java.io.tmpdir")));
+        factory.setRepository(new File("/tmp"));
  
         ServletFileUpload upload = new ServletFileUpload(factory);
          
@@ -198,8 +200,8 @@ public class RestServlet extends HttpServlet {
  
         // constructs the directory path to store upload file
         // this path is relative to application's directory
-        String uploadPath = getServletContext().getRealPath("")
-                + File.separator + UPLOAD_DIRECTORY;
+//        String uploadPath = getServletContext().getRealPath("") + File.separator + UPLOAD_DIRECTORY;
+        String uploadPath = "/tmp" + File.separator + UPLOAD_DIRECTORY;
          
         // creates the directory if it does not exist
         File uploadDir = new File(uploadPath);
@@ -222,7 +224,8 @@ public class RestServlet extends HttpServlet {
                         String filePath = uploadPath + File.separator + fileName;
                         String contentType = item.getContentType();
                         File storeFile = new File(filePath);
- 
+
+                        
                         // saves the file on disk
                         item.write(storeFile);
                         request.setAttribute("message", "Upload has been done successfully!");
@@ -230,10 +233,15 @@ public class RestServlet extends HttpServlet {
                         storeFileToDB(config, props, con, fileid, fileName, contentType, storeFile);
                         
                         storeFile.delete();
+
+                        writer.println("{\"filename\":\"" + fileName + "\", \"fileid\":\"" + fileid + "\"}");
+                        writer.flush();
+
                     }
                 }
             }
         } catch (Exception ex) {
+        	ex.printStackTrace();
             request.setAttribute("message",
                     "There was an error: " + ex.getMessage());
         }
@@ -384,10 +392,10 @@ public class RestServlet extends HttpServlet {
 			config = pathParts[pathParts.length - 3];
 			
 			params.put("endpoint", endpoint);
-				
+			
 			if("upload".equals(endpoint)) {
 				con = DriverManager.getConnection("jdbc:vnetcon:rest://" + config, p.getProperty(config + ".jdbc.user"), p.getProperty(config + ".jdbc.pass"));
-				this.uploadFile(config, p, con, req, resp);
+				this.uploadFile(config, p, con, req, resp, w);
 				con.close();
 				return;
 			}
