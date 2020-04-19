@@ -207,7 +207,7 @@ public class RestServlet extends HttpServlet {
             uploadDir.mkdir();
         }
  
-        writer.write("{[");
+        writer.write("[");
         try {
             // parses the request's content to extract file data
             @SuppressWarnings("unchecked")
@@ -244,7 +244,8 @@ public class RestServlet extends HttpServlet {
             writer.flush();
             ex.printStackTrace();
         }
-        writer.write("]}");
+        writer.write("]");
+        writer.flush();
     }
 
 	private void downloadFile(OutputStream out, Connection con, HttpServletRequest req, HttpServletResponse resp) throws Exception {
