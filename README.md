@@ -42,6 +42,7 @@ default.jdbc.url=jdbc:postgresql://localhost:5432/postgres
 default.jdbc.user=<your database username>
 default.jdbc.pass=<your database password>
 default.jdbc.logcon=default
+default.upload.tmp=/tmp
 ```
   
 Below are required sql statements for creating necessary tables to Postgresql database
@@ -103,6 +104,7 @@ default.jdbc.url=jdbc:postgresql://localhost:5432/postgres
 default.jdbc.user=<username>
 default.jdbc.pass=<password>
 default.jdbc.logcon=default
+default.upload.tmp=/tmp
 
 # rest servlet properties
 # this is used when writing log events
