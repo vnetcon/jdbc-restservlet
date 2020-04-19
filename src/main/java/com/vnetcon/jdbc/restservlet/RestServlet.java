@@ -394,6 +394,7 @@ public class RestServlet extends HttpServlet {
 			String pathParts[] = null;
 			boolean writeInArray = true;
 			boolean writeInOneRow = false;
+			boolean printParams = false;
 						
 			pathParts = uri.split("/");
 			version = pathParts[pathParts.length - 1];
@@ -421,6 +422,8 @@ public class RestServlet extends HttpServlet {
 			w = new PrintWriter(out);
 			resp.setContentType("application/json; charset=UTF-8");
 			Enumeration<String> reqParams = req.getParameterNames();
+			
+			
 			while(reqParams.hasMoreElements()) {
 				String name = reqParams.nextElement();
 				String value = req.getParameter(name);
@@ -434,6 +437,12 @@ public class RestServlet extends HttpServlet {
 					if("true".equals(value)) {
 						writeInOneRow = true;
 					}
+				}
+			}
+			
+			if(params.containsKey("showparams")) {
+				if("true".equals(params.get("showparams"))) {
+					printParams = true;
 				}
 			}
 
@@ -493,9 +502,25 @@ public class RestServlet extends HttpServlet {
 				return;
 			}
 			
+			StringBuilder paramsSB = new StringBuilder();
+			String paramsDelim = "";
+			paramsSB.append("[");
+			
 			for(ExecSQL esql : esqls) {
 				StringWriter sw = new StringWriter();
 				sql = esql.sql;
+				
+				if(printParams) {
+					List<String> sqlparams = com.vnetcon.jdbc.rest.RestDriver.getSqlRequestParameters(sql);
+					for(String s : sqlparams) {
+						paramsSB.append(paramsDelim);
+						paramsSB.append("\"");
+						paramsSB.append(s);
+						paramsSB.append("\"");
+						paramsDelim = ", ";
+					}
+					continue;
+				}
 				
 				if("SELECT".equals(esql.sqltype)) {
 					Statement stmt = con.createStatement();
@@ -562,6 +587,13 @@ public class RestServlet extends HttpServlet {
 					stmt.close();
 				}
 				
+			}
+			
+			if(printParams) {
+				paramsSB.append("]");
+				w.write(paramsSB.toString());
+				w.flush();
+				return;
 			}
 
 			try {
