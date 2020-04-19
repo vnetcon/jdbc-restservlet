@@ -17,7 +17,7 @@ And thats it.
 * Create REST API from your SQL based on [jdbc-rest](https://github.com/vnetcon/jdbc-rest) driver (select/insert/update/delete)
 * email endpoint for sending emails
 * upload endpoint for storing files into database
-* download endpoint for retrieving files from database (under development)
+* download endpoint for retrieving files from database
 * From GDPR point of view rest api requests (sselect/insert/update/delete) are logged automtically to REST_SERVLET_LOG table
   
 
