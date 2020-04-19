@@ -184,6 +184,44 @@ sendEmail(){
 sendEmailReply(success, data){
 }
 
+// ajax call for uploading file
+// fileinput = "file" input element id
+// uploadret = functon to halndle upload return json.
+uploadFile = function(fileinput, uploadrret) {
+    var file = document.querySelector('#' + fileinput).files[0];
+    var data = new FormData();
+    data.append('file', document.querySelector('#' + fileinput).files[0]);
+    var request = new XMLHttpRequest();
+    request.open('post', fileuploadurl); 
+    request.upload.addEventListener('progress', function(e) {
+	    var percent_complete = (e.loaded / e.total)*100;
+	    console.log(percent_complete);
+    });
+
+    // AJAX request finished event
+    request.addEventListener('load', function(e) {
+        // HTTP status message
+        console.log(request.status);
+        // request.response will hold the response from the server
+        console.log(request.response);
+        console.log("cleaning file input");
+        document.getElementById(fileinput).value = null;
+        uploadrret(request.response);
+    });
+
+    // send POST request to server side script    
+    request.send(data);
+}
+
+// hanlde upload return. This will include filename-fileid mapping.
+// The fileid is generated ui during the upload and this should be used
+// in file download (e.g. ?fileid=generated-uuid
+uploadret = function(reply){
+    alert(reply);
+    JSON.parse(reply);
+}
+
+
 ```
 
 
