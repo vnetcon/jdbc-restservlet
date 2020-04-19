@@ -1,6 +1,7 @@
 package com.vnetcon.jdbc.restservlet;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
@@ -80,6 +81,8 @@ public class RestServlet extends HttpServlet {
 	private static final String uploadSql = "INSERT INTO \"" + configSchema + "\".\"REST_SERVLET_FILE\" \r\n" +
 	" (\"FILEID\", \"FILENAME\", \"CONTENTTYPE\", \"LENGTH\", \"CONTENT\") VALUES (?,?,?,?,?)";
 	
+	String downloadSql = "SELECT \"CONTENTTYPE\", \"LENGTH\", \"CONTENT\" FROM \"" + configSchema + "\".\"REST_SERVLET_FILE\" \r\n" +
+			" WHERE \"FILEID\" = ?";
 	
     private static final String UPLOAD_DIRECTORY = "upload";
     
@@ -95,10 +98,6 @@ public class RestServlet extends HttpServlet {
     	public String sql;
     }
     
-    class UploadInfo {
-    	public String fileid;
-    	public String filename;
-    }
     
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -171,24 +170,23 @@ public class RestServlet extends HttpServlet {
     }
 
 	
-	private List<UploadInfo> uploadFile(String config, Properties props, Connection con, HttpServletRequest request, HttpServletResponse response, PrintWriter writer) throws Exception {
-//        PrintWriter writer = response.getWriter();
+	private void uploadFile(String config, Properties props, Connection con, HttpServletRequest request, HttpServletResponse response, PrintWriter writer) throws Exception {
+		String tmp = props.getProperty(config + ".upload.tmp");
+		
         if (!ServletFileUpload.isMultipartContent(request)) {
             // if not, we stop here
-//            PrintWriter writer = response.getWriter();
-            writer.println("Error: Form must has enctype=multipart/form-data.");
+            writer.println("{\"status\":\"error\", \"message\",\"Form must has enctype=multipart/form-data.\"}");
             writer.flush();
-            return null;
+            return;
         }
  
-        List<UploadInfo> fList = new ArrayList<UploadInfo>();
         // configures upload settings
         DiskFileItemFactory factory = new DiskFileItemFactory();
         // sets memory threshold - beyond which files are stored in disk
         factory.setSizeThreshold(MEMORY_THRESHOLD);
         // sets temporary location to store files
 //        factory.setRepository(new File(System.getProperty("java.io.tmpdir")));
-        factory.setRepository(new File("/tmp"));
+        factory.setRepository(new File(tmp));
  
         ServletFileUpload upload = new ServletFileUpload(factory);
          
@@ -201,7 +199,7 @@ public class RestServlet extends HttpServlet {
         // constructs the directory path to store upload file
         // this path is relative to application's directory
 //        String uploadPath = getServletContext().getRealPath("") + File.separator + UPLOAD_DIRECTORY;
-        String uploadPath = "/tmp" + File.separator + UPLOAD_DIRECTORY;
+        String uploadPath = tmp + File.separator + UPLOAD_DIRECTORY;
          
         // creates the directory if it does not exist
         File uploadDir = new File(uploadPath);
@@ -209,11 +207,11 @@ public class RestServlet extends HttpServlet {
             uploadDir.mkdir();
         }
  
+        writer.write("{[");
         try {
             // parses the request's content to extract file data
             @SuppressWarnings("unchecked")
             List<FileItem> formItems = upload.parseRequest(request);
- 
             if (formItems != null && formItems.size() > 0) {
                 // iterates over form's fields
                 for (FileItem item : formItems) {
@@ -234,7 +232,7 @@ public class RestServlet extends HttpServlet {
                         
                         storeFile.delete();
 
-                        writer.println("{\"filename\":\"" + fileName + "\", \"fileid\":\"" + fileid + "\"}");
+                        writer.println("{\"status\":\"ok\",\"filename\":\"" + fileName + "\", \"fileid\":\"" + fileid + "\"}");
                         writer.flush();
 
                     }
@@ -242,22 +240,33 @@ public class RestServlet extends HttpServlet {
             }
         } catch (Exception ex) {
         	ex.printStackTrace();
-            request.setAttribute("message",
-                    "There was an error: " + ex.getMessage());
+            writer.println("{\"status\":\"error\"}");
+            writer.flush();
+            ex.printStackTrace();
         }
-        
-        /*
-        // redirects client to message page
-        getServletContext().getRequestDispatcher("/message.jsp").forward(
-                request, response);	
-        */
-        
-        return fList;
-
+        writer.write("]}");
     }
 
-	private void downloadFile(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-		
+	private void downloadFile(OutputStream out, Connection con, HttpServletRequest req, HttpServletResponse resp) throws Exception {
+		String fileid = req.getParameter("fileid");
+		PreparedStatement pstmt = con.prepareStatement(downloadSql);
+		pstmt.setString(1, fileid);
+		ResultSet rs = pstmt.executeQuery();
+		if(rs.next()) {
+			resp.setHeader("Content-type", rs.getString(1));
+			resp.setHeader("Content-length", "" + rs.getInt(2));
+			
+			InputStream in = rs.getBinaryStream(3);
+			byte[] buf = new byte[1024];
+			int iRead = -1;
+			while((iRead = in.read(buf)) > -1) {
+				out.write(buf,  0, iRead);
+			}
+			out.flush();
+			in.close();
+		}
+		rs.close();
+		pstmt.close();
 	}
 	
 	private void logRequest(String config, Properties props, Connection con, String sql, Map<String, String> params, String returnJson, String realVals, String message) throws Exception {
@@ -356,7 +365,7 @@ public class RestServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		OutputStream out = resp.getOutputStream();
-		PrintWriter w = new PrintWriter(out);
+		PrintWriter w = null;
 
 		Connection con = null;
 		Connection logCon = null;
@@ -376,7 +385,6 @@ public class RestServlet extends HttpServlet {
 			}
 			
 			p = this.loadProperties();
-			resp.setContentType("application/json; charset=UTF-8");
 			Class.forName("com.vnetcon.jdbc.rest.RestDriver");
 			String uri = req.getRequestURI();
 			String endpoint = null;
@@ -394,6 +402,8 @@ public class RestServlet extends HttpServlet {
 			params.put("endpoint", endpoint);
 			
 			if("upload".equals(endpoint)) {
+				w = new PrintWriter(out);
+				resp.setContentType("application/json; charset=UTF-8");
 				con = DriverManager.getConnection("jdbc:vnetcon:rest://" + config, p.getProperty(config + ".jdbc.user"), p.getProperty(config + ".jdbc.pass"));
 				this.uploadFile(config, p, con, req, resp, w);
 				con.close();
@@ -401,11 +411,14 @@ public class RestServlet extends HttpServlet {
 			}
 
 			if("download".equals(endpoint)) {
-				this.downloadFile(req, resp);
+				con = DriverManager.getConnection("jdbc:vnetcon:rest://" + config, p.getProperty(config + ".jdbc.user"), p.getProperty(config + ".jdbc.pass"));
+				this.downloadFile(out, con, req, resp);
+				con.close();
 				return;
 			}
 			
-			
+			w = new PrintWriter(out);
+			resp.setContentType("application/json; charset=UTF-8");
 			Enumeration<String> reqParams = req.getParameterNames();
 			while(reqParams.hasMoreElements()) {
 				String name = reqParams.nextElement();
