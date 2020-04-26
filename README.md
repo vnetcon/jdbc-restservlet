@@ -12,6 +12,10 @@ Turn your SQL to REST API without middle tier coding.
 Below is a screenshot how your folder structure should look after unziiping the vnetcon.zip
 ![jdbc-servlet_queryeditor](http://vnetcon.s3-website-eu-west-1.amazonaws.com/img/quickstart.png)
   
+If you want to deploy this to an other tomcat, you can copy the jdbc-rest.war from app\apache-tomcat-9.0.34\webapps and deploy that to other tomcat or servlet engine.
+  
+You must have on each environment /opt/vnetcon/conf folder where you store your jdbc-rest related configurations.
+  
   
 ## Overview
 This servlet is build on [jdbc-rest](https://github.com/vnetcon/jdbc-rest) driver and it serves as REST API server.
