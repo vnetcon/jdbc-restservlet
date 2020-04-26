@@ -1,6 +1,19 @@
 # jdbc-restservlet
 Turn your SQL to REST API without middle tier coding.
-
+  
+## Quick start (For windows 64bit)
+1. Download the [vnetcon.zip](http://vnetcon.s3-website-eu-west-1.amazonaws.com/vnetcon.zip) file
+2. Unzip the file in c:\opt folder
+3. Double click the 1_StartPostgreSQL.bat (this will start the database)
+4. Double click the 3_StartTomcat8.bat (this will start the tomcat web server)
+5. Point your browser at http://localhost:8080/jdbc-rest/rest/default/getUser/v1 (this will open the demo json)
+6. Start 2_StartDBeaver.bat to open the database browser and start to create your own sql based rest api endpoints.
+  
+Below is a screenshot how your folder structure should look after unziiping the vnetcon.zip
+![jdbc-servlet_queryeditor](http://vnetcon.s3-website-eu-west-1.amazonaws.com/img/quickstart.png)
+  
+  
+## Overview
 This servlet is build on [jdbc-rest](https://github.com/vnetcon/jdbc-rest) driver and it serves as REST API server.
 The idea is to offer an out-of-the box REST API solution for web developers (Angular, React, Vue etc.). 
 In short web developer need to write only client side code and sql - no need for middle tier applications for accessing database. In our mind the development environment would be something like
