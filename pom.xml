@@ -16,6 +16,8 @@
   <dependencies>
   
 <!-- https://mvnrepository.com/artifact/org.osgi/org.osgi.framework -->
+<!-- https://mvnrepository.com/artifact/javax.ws.rs/javax.ws.rs-api -->
+
 <dependency>
   <groupId>org.osgi</groupId>
   <artifactId>org.osgi.core</artifactId>
@@ -36,12 +38,38 @@
 	</dependency>
 
 
-	<dependency>
-	    <groupId>javax.servlet</groupId>
-	    <artifactId>javax.servlet-api</artifactId>
-	    <version>3.1.0</version>
-	    <scope>provided</scope>
-	</dependency>
+<!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
+<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>javax.servlet-api</artifactId>
+    <version>4.0.1</version>
+    <scope>provided</scope>
+</dependency>
+<!-- https://mvnrepository.com/artifact/javax.ws.rs/javax.ws.rs-api -->
+<dependency>
+    <groupId>javax.ws.rs</groupId>
+    <artifactId>javax.ws.rs-api</artifactId>
+    <version>2.1.1</version>
+</dependency>
+
+
+                <dependency>
+                        <groupId>com.sun.jersey</groupId>
+                        <artifactId>jersey-server</artifactId>
+                        <version>1.19.4</version>
+                </dependency>
+                <dependency>
+                        <groupId>com.sun.jersey</groupId>
+                        <artifactId>jersey-core</artifactId>
+                        <version>1.19.4</version>
+                </dependency>
+                <dependency>
+                        <groupId>com.sun.jersey</groupId>
+                        <artifactId>jersey-servlet</artifactId>
+                        <version>1.19.4</version>
+                </dependency>
+
+
   
 <dependency>
     <groupId>commons-fileupload</groupId>
@@ -95,7 +123,7 @@
                             <include>**/*.jar</include>
                         </includes>
                     </resource>
-                </webResources>
+                </webResources>                
             </configuration>
         </plugin>  
   
