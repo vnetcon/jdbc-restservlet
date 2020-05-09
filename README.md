@@ -1,6 +1,8 @@
 # jdbc-restservlet
 Turn your SQL to REST API without middle tier coding.
   
+This is a sub project of our main project [curvy](https://github.com/vnetcon/curvy/). The easy full stack web development environment.
+  
 ## Quick start (For windows 64bit)
 1. Download the [vnetcon.zip](http://vnetcon.s3-website-eu-west-1.amazonaws.com/vnetcon.zip) file
 2. Unzip the file in c:\opt folder
