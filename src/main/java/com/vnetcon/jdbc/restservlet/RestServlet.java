@@ -2,6 +2,7 @@ package com.vnetcon.jdbc.restservlet;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
@@ -13,6 +14,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.Reader;
@@ -50,6 +52,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 */
 import com.vnetcon.jdbc.rest.RestConnection;
+import com.vnetcon.jdbc.rest.RestResultSet;
 
 public class RestServlet extends HttpServlet {
 
@@ -87,7 +90,7 @@ public class RestServlet extends HttpServlet {
     private static final String UPLOAD_DIRECTORY = "upload";
     
     // upload settings
-    private static final int MEMORY_THRESHOLD   = 1024 * 1024 * 3;  // 3MB
+    private static final int MEMORY_THRESHOLD   = 1024 * 1024 * 3;  // 3MBs
     private static final int MAX_FILE_SIZE      = 1024 * 1024 * 40; // 40MB
     private static final int MAX_REQUEST_SIZE   = 1024 * 1024 * 50; // 50MB	
     
@@ -107,9 +110,17 @@ public class RestServlet extends HttpServlet {
 	private Properties loadEmailProperties() throws SQLException {
 		Properties dbProps = new Properties();
 		try {
-			FileInputStream fIn = new FileInputStream(emailConf);
-			dbProps.load(fIn);
-			fIn.close();
+			File f = new File(emailConf);
+			
+			if(f.exists()) {
+				FileInputStream fIn = new FileInputStream(emailConf);
+				dbProps.load(fIn);
+				fIn.close();
+			} else {
+				InputStream in = this.getClass().getClassLoader().getResourceAsStream("/email.properties");
+				dbProps.load(in);
+				in.close();
+			}
 		}catch(Exception e) {
 			throw new SQLException(e);
 		}
@@ -119,9 +130,16 @@ public class RestServlet extends HttpServlet {
 	private Properties loadProperties() throws SQLException {
 		Properties dbProps = new Properties();
 		try {
-			FileInputStream fIn = new FileInputStream(dbConf);
-			dbProps.load(fIn);
-			fIn.close();
+			File f = new File(dbConf);
+			if(f.exists()) {
+				FileInputStream fIn = new FileInputStream(dbConf);
+				dbProps.load(fIn);
+				fIn.close();
+			} else {
+				InputStream in = this.getClass().getClassLoader().getResourceAsStream("/database.properties");
+				dbProps.load(in);
+				in.close();
+			}
 		}catch(Exception e) {
 			throw new SQLException(e);
 		}
@@ -130,7 +148,6 @@ public class RestServlet extends HttpServlet {
 	
 	private List<ExecSQL> getJsonSql(Connection con, String endpoint, String version, String accesstoken) throws Exception {
 		List<ExecSQL> aRet = new ArrayList<ExecSQL>();
-		String sql = null;
 		PreparedStatement stmt = con.prepareStatement(configSelect);
 		stmt.setString(1, endpoint);
 		stmt.setString(2, version);
@@ -145,7 +162,45 @@ public class RestServlet extends HttpServlet {
 		}
 
 		return aRet;
-		
+	}
+
+	private List<ExecSQL> getJsonSqlFromFile(String uri) throws Exception {
+		List<ExecSQL> aRet = new ArrayList<ExecSQL>();
+		String sqlFile = uri;
+		File f = null;
+		f = new File(sqlFile);
+		FileInputStream fIn = new FileInputStream(f);
+		BufferedReader bfIn = new BufferedReader(new InputStreamReader(fIn));
+		String b = null;
+		StringBuilder sb = new StringBuilder();
+		String sqlType = null;
+		while((b = bfIn.readLine()) != null) {
+			if(b.toLowerCase().indexOf("select") > -1) {
+				sqlType = "SELECT";
+			}
+			if(b.toLowerCase().indexOf("update") > -1) {
+				sqlType = "UPDATE";
+			}
+			if(b.toLowerCase().indexOf("delete") > -1) {
+				sqlType = "DELETE";
+			}
+			if(b.trim().endsWith(";")){
+				sb.append(b.trim().subSequence(0, b.length() - 1));
+				sb.append(" ");
+				ExecSQL exec = new ExecSQL();
+				exec.sql = sb.toString();
+				exec.sqltype = sqlType;
+				sb = new StringBuilder();
+				sqlType = null;
+				aRet.add(exec);
+				continue;
+			}
+			sb.append(b.trim());
+			sb.append(" ");
+		}
+		bfIn.close();
+		fIn.close();
+		return aRet;		
 	}
 	
 	
@@ -387,7 +442,7 @@ public class RestServlet extends HttpServlet {
 			
 			p = this.loadProperties();
 			Class.forName("com.vnetcon.jdbc.rest.RestDriver");
-			String uri = req.getRequestURI();
+			String uri = req.getRequestURI().substring(req.getContextPath().length());
 			String endpoint = null;
 			String version = null;
 			String accesstoken = null;
@@ -397,8 +452,8 @@ public class RestServlet extends HttpServlet {
 			boolean printParams = false;
 						
 			pathParts = uri.split("/");
-			version = pathParts[pathParts.length - 1];
-			endpoint = pathParts[pathParts.length - 2];
+			endpoint = pathParts[pathParts.length - 1];
+			version = pathParts[pathParts.length - 2];
 			config = pathParts[pathParts.length - 3];
 			
 			params.put("endpoint", endpoint);
@@ -489,8 +544,14 @@ public class RestServlet extends HttpServlet {
 				restCon = DriverManager.getConnection("jdbc:vnetcon:rest://" + p.getProperty(config + ".jdbc.restcon"), p.getProperty(config + ".jdbc.user"), p.getProperty(config + ".jdbc.pass"));
 				esqls = getJsonSql(restCon, endpoint, version, accesstoken);
 				restCon.close();
+				if(esqls.size() == 0) {
+					esqls = getJsonSqlFromFile(this.getServletContext().getRealPath(uri));
+				}
 			} else {
 				esqls = getJsonSql(con, endpoint, version, accesstoken);
+				if(esqls.size() == 0) {
+					esqls = getJsonSqlFromFile(this.getServletContext().getRealPath(uri));
+				}
 			}
 
 			if(esqls.size() == 0) {

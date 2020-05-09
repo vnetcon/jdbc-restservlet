@@ -45,14 +45,27 @@
     <version>4.0.1</version>
     <scope>provided</scope>
 </dependency>
+
+<!-- https://mvnrepository.com/artifact/javax.servlet.jsp/javax.servlet.jsp-api -->
+<!-- 
+<dependency>
+    <groupId>javax.servlet.jsp</groupId>
+    <artifactId>javax.servlet.jsp-api</artifactId>
+    <version>2.3.3</version>
+    <scope>provided</scope>
+</dependency>
+-->
+
 <!-- https://mvnrepository.com/artifact/javax.ws.rs/javax.ws.rs-api -->
+<!-- 
 <dependency>
     <groupId>javax.ws.rs</groupId>
     <artifactId>javax.ws.rs-api</artifactId>
     <version>2.1.1</version>
 </dependency>
+-->
 
-
+<!-- 
                 <dependency>
                         <groupId>com.sun.jersey</groupId>
                         <artifactId>jersey-server</artifactId>
@@ -68,7 +81,7 @@
                         <artifactId>jersey-servlet</artifactId>
                         <version>1.19.4</version>
                 </dependency>
-
+-->
 
   
 <dependency>
@@ -88,11 +101,13 @@
 	    <artifactId>jdbc-rest</artifactId>
 	    <version>0.0.1-SNAPSHOT</version>
 	</dependency>
+<!-- 
 <dependency>
     <groupId>org.apache.derby</groupId>
     <artifactId>derbyclient</artifactId>
     <version>10.14.2.0</version>
 </dependency>  
+-->
 <dependency>
     <groupId>org.postgresql</groupId>
     <artifactId>postgresql</artifactId>
@@ -109,7 +124,7 @@
   
   
   <build>
-    <finalName>jdbc-rest</finalName>
+    <finalName>curvy</finalName>
   <plugins>
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
