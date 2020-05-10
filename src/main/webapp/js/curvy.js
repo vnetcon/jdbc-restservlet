@@ -18,7 +18,6 @@ mapChildNodes = function(text, c, json){
             var s = '';
             var n = getPathVal(json, c[i].className);
             var tname = c[i].nodeName.toLowerCase();
-            console.log(tname);
             if(n !== null && typeof n === 'object' && Array.isArray(n)){
                 for(var ii = 0; ii < n.length; ii++){
                     var b = t;
@@ -28,7 +27,6 @@ mapChildNodes = function(text, c, json){
                     }
                     var divbuf = document.createElement("div");
                     divbuf.innerHTML = b;
-                    console.log('childNodes: ' + b);
                     var sb = mapChildNodes(b, divbuf.childNodes, json);
                     s += sb;
                     divbuf.remove();
@@ -50,7 +48,6 @@ mapChildNodes = function(text, c, json){
     tmp = tmp.replace(/tr_curvy/g, 'tr');
     tmp = tmp.replace(/td_curvy/g, 'td');
     tmp = tmp.replace(/table_curvy/g, 'table');
-    console.log(tmp);
     return tmp;
 }
 
